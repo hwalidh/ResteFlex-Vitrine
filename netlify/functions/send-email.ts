@@ -2,8 +2,8 @@ import { Handler } from '@netlify/functions';
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env['RESEND_API_KEY']);
-const TO_EMAIL = 'hamatwalid@gmail.com';
-const FROM_EMAIL = 'contact@resteflex.fr'; // domaine vérifié sur Resend
+const TO_EMAIL   = 'hamatwalid@gmail.com';
+const FROM_EMAIL = 'onboarding@resend.dev'; // TODO: remplacer par contact@resteflex.fr après vérification du domaine
 
 // ── Templates HTML ────────────────────────────────────────────────────────────
 
@@ -190,8 +190,8 @@ export const handler: Handler = async (event) => {
 
     const { error } = await resend.emails.send({
       from:    `ResteFlex Conciergerie <${FROM_EMAIL}>`,
-      to:      TO_EMAIL,
-      replyTo: emailData.from_email,
+      to:      [TO_EMAIL],
+      replyTo: `${emailData.from_name} <${emailData.from_email}>`,
       subject: `${SUBJECTS[packType]} — ${emailData.from_name}`,
       html:    templateFn(emailData),
     });
