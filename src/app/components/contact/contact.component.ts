@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { trigger, transition, style, animate } from '@angular/animations';
 import { EmailService } from '../../services/email.service';
 import {
   TravelPackEmailParams,
@@ -10,26 +11,37 @@ import {
 import { SuccessPopupComponent } from '../shared/success-popup/success-popup.component';
 import { PACKAGES_CONFIG } from '../../data/packages.config';
 
-// ── Types ──────────────────────────────────────────────────────────────────
 type PackId = 'travel' | 'business' | 'serenity';
-// ───────────────────────────────────────────────────────────────────────────
 
 @Component({
   selector: 'app-contact',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, SuccessPopupComponent],
   templateUrl: './contact.component.html',
-  styleUrls: ['./contact.component.scss']
+  styleUrls: ['./contact.component.scss'],
+  animations: [
+    trigger('stepAnim', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(24px)' }),
+        animate('350ms cubic-bezier(0.4,0,0.2,1)',
+          style({ opacity: 1, transform: 'translateY(0)' }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in',
+          style({ opacity: 0, transform: 'translateY(-16px)' }))
+      ])
+    ])
+  ]
 })
 export class ContactComponent {
 
-  // ── État du formulaire multi-étapes ────────────────────────────────────
-  currentStep = 0;
+  // ── État ───────────────────────────────────────────────────────────────
+  currentStep  = 0;
   isSubmitting = false;
   submitted    = false;
   emailError   = false;
 
-  // ── Étapes de la progression ───────────────────────────────────────────
+  // ── Étapes ────────────────────────────────────────────────────────────
   readonly steps = [
     { name: 'Pack',    emoji: '🎯' },
     { name: 'Contact', emoji: '👋' },
@@ -37,8 +49,8 @@ export class ContactComponent {
     { name: 'Message', emoji: '✉️' }
   ];
 
-  // ── Données de référence (source unique : packages.config.ts) ──────────
-  readonly packages = PACKAGES_CONFIG;   // Travel / Business / Serenity
+  // ── Données de référence ───────────────────────────────────────────────
+  readonly packages = PACKAGES_CONFIG;
 
   readonly propertyTypes = [
     { id: 'apartment', name: 'Appartement' },
@@ -67,6 +79,7 @@ export class ContactComponent {
       // Étape 2
       name:  ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
+      phone: ['', [Validators.required, Validators.pattern(/^(\+?\d[\d\s\-().]{7,14}\d)$/)]],
       // Étape 3 — Travel
       propertyType:      [''],
       propertyStyle:     [''],
@@ -82,11 +95,11 @@ export class ContactComponent {
       currentRent:   [''],
       propertyValue: [''],
       // Étape 4
-      message: ['', [Validators.required, Validators.minLength(50)]]
+      message: ['', [Validators.required, Validators.minLength(20)]]
     });
   }
 
-  // ── Getters utilitaires ────────────────────────────────────────────────
+  // ── Getters ────────────────────────────────────────────────────────────
 
   get selectedPack(): PackId {
     return this.contactForm.get('projectType')?.value as PackId;
@@ -97,17 +110,22 @@ export class ContactComponent {
   }
 
   get remainingChars(): number {
-    return Math.max(0, 50 - this.messageLength);
+    return Math.max(0, 20 - this.messageLength);
   }
 
-  // ── Navigation entre étapes ────────────────────────────────────────────
+  get step2Valid(): boolean {
+    return (
+      !!this.contactForm.get('name')?.valid &&
+      !!this.contactForm.get('email')?.valid &&
+      !!this.contactForm.get('phone')?.valid
+    );
+  }
+
+  // ── Navigation ─────────────────────────────────────────────────────────
 
   nextStep()     { if (this.currentStep < this.steps.length - 1) this.currentStep++; }
   previousStep() { if (this.currentStep > 0) this.currentStep--; }
-
-  selectPack(id: PackId) {
-    this.contactForm.patchValue({ projectType: id });
-  }
+  selectPack(id: PackId) { this.contactForm.patchValue({ projectType: id }); }
 
   // ── Validation ─────────────────────────────────────────────────────────
 
@@ -123,15 +141,13 @@ export class ContactComponent {
       Object.values(this.contactForm.controls).forEach(c => c.markAsTouched());
       return;
     }
-
     this.isSubmitting = true;
     this.emailError   = false;
-
     try {
       const ok = await this.sendEmail(this.contactForm.value);
       ok ? (this.submitted = true) : (this.emailError = true);
     } catch (err) {
-      console.error('[Contact] Erreur envoi email :', err);
+      console.error('[Contact] Erreur envoi :', err);
       this.emailError = true;
     } finally {
       this.isSubmitting = false;
@@ -140,13 +156,14 @@ export class ContactComponent {
 
   closePopup() { this.submitted = false; }
 
-  // ── Envoi email selon le pack sélectionné ─────────────────────────────
+  // ── Envoi email ────────────────────────────────────────────────────────
 
-  private sendEmail(d: ReturnType<typeof this.contactForm.getRawValue>): Promise<boolean> {
+  private sendEmail(d: any): Promise<boolean> {
     const base = {
-      to_name:   'Walid',
-      from_name: d.name,
+      to_name:    'Walid',
+      from_name:  d.name,
       from_email: d.email,
+      from_phone: d.phone || 'Non renseigné',
       pack_type:  this.labelOf(this.packages, d.projectType),
       message:    d.message || ''
     };
@@ -186,8 +203,7 @@ export class ContactComponent {
     }
   }
 
-  /** Retourne le label lisible d'un item à partir de son id. */
   private labelOf(list: { id: string; name: string }[], id: string): string {
-    return list.find(item => item.id === id)?.name ?? id;
+    return list.find(i => i.id === id)?.name ?? id;
   }
 }

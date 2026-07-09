@@ -1,67 +1,73 @@
-<div *ngIf="show" 
-     class="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50"
+<div *ngIf="show"
+     class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
      (click)="onClose()">
-  
-  <!-- Travel Pack Animations -->
-  <ng-container *ngIf="packType === 'travel'">
-    <div class="travel-container">
-      <!-- Éléments qui tombent -->
-      <div *ngFor="let item of travelElements; let i = index" 
-           class="travel-item"
-           [ngClass]="{'plane': i < 3, 'palm': i >= 3 && i < 5, 'beach': i >= 5}"
-           [style.animation-delay]="i * 0.3 + 's'">
-        {{ i < 3 ? '✈️' : (i >= 3 && i < 5 ? '🌴' : '🏖️') }}
-      </div>
-    </div>
-    
-    <!-- Globe flottant -->
-    <div class="floating-globe">
-      <div class="globe">🌍</div>
-      <div class="compass">🧭</div>
-    </div>
-  </ng-container>
 
-  <!-- Business Pack Animations -->
-  <ng-container *ngIf="packType === 'business'">
-    <div class="business-container">
-      <!-- Pluie d'argent -->
-      <div *ngFor="let money of businessElements; let i = index" 
-           class="money-item"
-           [ngClass]="{'bill': i < 8, 'bag': i >= 8}"
-           [style.animation-delay]="i * 0.2 + 's'">
-        {{ i < 8 ? '💵' : '💰' }}
-      </div>
-    </div>
-    
-    <!-- Graphique flottant -->
-    <div class="floating-chart">
-      <div class="chart-icon">📊</div>
-      <div class="stats">📈</div>
-    </div>
-  </ng-container>
+  <!-- Backdrop -->
+  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
 
-  <!-- Popup Content -->
-  <div class="popup-content"
-       [ngClass]="packType"
+  <!-- Éléments flottants animés (arrière-plan) -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div *ngFor="let item of floatingItems; let i = index"
+         class="floating-item"
+         [style.left]="(i * 12 + 4) + '%'"
+         [style.animation-delay]="(i * 0.25) + 's'"
+         [style.font-size]="(1.5 + (i % 3) * 0.5) + 'rem'">
+      {{ item }}
+    </div>
+  </div>
+
+  <!-- Popup — pleine largeur mobile, carte sur desktop -->
+  <div [@popupAnim]
+       class="popup-card relative w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl bg-white shadow-2xl"
        (click)="$event.stopPropagation()">
-    <div class="text-center">
-      <!-- Close Button -->
-      <button class="close-button" (click)="onClose()">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </button>
 
-      <!-- Success Icon -->
-      <div class="success-icon">
-        <svg class="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-        </svg>
+    <!-- Bandeau coloré en haut -->
+    <div class="h-2 rounded-t-3xl sm:rounded-t-3xl bg-gradient-to-r w-full"
+         [class]="config.accent">
+    </div>
+
+    <!-- Bouton fermer -->
+    <button (click)="onClose()"
+            class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center
+                   rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200
+                   hover:text-gray-600 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+
+    <div class="p-8 text-center">
+      <!-- Icône principale animée -->
+      <div class="success-icon-wrap mx-auto mb-6">
+        <!-- Cercle de check -->
+        <div class="check-circle bg-gradient-to-br"
+             [class]="config.accent">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <!-- Emoji pack -->
+        <span class="pack-emoji">{{ config.icon }}</span>
       </div>
+
+      <!-- Titre -->
+      <h3 class="text-xl sm:text-2xl font-bold text-gray-800 mb-3">
+        {{ config.title }}
+      </h3>
 
       <!-- Message -->
-      <h3 class="title">{{ title }}</h3>
-      <p class="message">{{ message }}</p>
+      <p class="text-gray-500 text-sm sm:text-base whitespace-pre-line leading-relaxed mb-6">
+        {{ config.message }}
+      </p>
+
+      <!-- Bouton de fermeture principal -->
+      <button (click)="onClose()"
+              class="w-full py-3.5 rounded-xl text-white font-semibold text-base
+                     bg-gradient-to-r transition-all duration-300
+                     hover:-translate-y-0.5 hover:shadow-lg active:scale-95"
+              [class]="config.accent">
+        Fermer 👋
+      </button>
     </div>
   </div>
 </div>
