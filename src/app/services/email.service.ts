@@ -139,8 +139,9 @@ export class EmailService {
     return [
       '👤 INFORMATIONS CLIENT',
       '──────────────',
-      `• Nom   : ${p.from_name}`,
-      `• Email : ${p.from_email}`,
+      `• Nom      : ${p.from_name}`,
+      `• Email    : ${p.from_email}`,
+      `• Téléphone: ${p.from_phone || 'Non renseigné'}`,
       ''
     ];
   }
