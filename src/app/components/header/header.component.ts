@@ -62,13 +62,18 @@ export class HeaderComponent {
   // ── Calendly ───────────────────────────────────────────────────────────
 
   openCalendly() {
-    // @ts-ignore — Calendly est chargé via script externe
-    Calendly.initPopupWidget({
-      url:       CALENDLY_URL,
-      color:     '#a100ff',
-      textColor: '#ffffff',
-      branding:  true
-    });
+    // @ts-ignore
+    if (typeof window.Calendly !== 'undefined') {
+      // @ts-ignore
+      window.Calendly.initPopupWidget({
+        url: CALENDLY_URL,
+        color: '#a100ff',
+        textColor: '#ffffff',
+        branding: true
+      });
+    } else {
+      console.error('Calendly non chargé');
+    }
   }
 
   // ── Scrollspy ──────────────────────────────────────────────────────────
