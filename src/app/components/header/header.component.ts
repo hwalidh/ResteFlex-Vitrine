@@ -1,8 +1,10 @@
 import { Component, HostListener } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
+
+// URL Calendly centralisée — à changer ici uniquement
+const CALENDLY_URL = 'https://calendly.com/hamatwalid/30min';
 
 @Component({
   selector: 'app-header',
@@ -23,85 +25,88 @@ import { trigger, transition, style, animate } from '@angular/animations';
   ]
 })
 export class HeaderComponent {
-  showScrollspy = false;
-  activeSection = '';
-  lastScrollTop = 0;
-  isMobileMenuOpen = false;
 
-  sections = [
-    { id: 'hero', name: 'Accueil' },
-    { id: 'presentation', name: 'Présentation' },
-    { id: 'about', name: 'À propos' },
-    { id: 'services', name: 'Prestations' },
-    { id: 'travel-pack', name: 'Travel Pack' },
+  // ── État UI ──────────────────────────────────────────────────────────────
+  isMobileMenuOpen = false;
+  showScrollspy    = false;
+  activeSection    = '';
+
+  // ── Sections visibles dans la scrollspy ───────────────────────────────
+  readonly sections = [
+    { id: 'hero',          name: 'Accueil' },
+    { id: 'presentation',  name: 'Présentation' },
+    { id: 'about',         name: 'À propos' },
+    { id: 'services',      name: 'Prestations' },
+    { id: 'travel-pack',   name: 'Travel Pack' },
     { id: 'business-pack', name: 'Business Pack' },
     { id: 'serenity-pack', name: 'Serenity Pack' },
-    { id: 'testimonials', name: 'Témoignages' }
+    { id: 'testimonials',  name: 'Témoignages' }
   ];
 
   constructor(private router: Router) {}
 
-  toggleMobileMenu() {
-    this.isMobileMenuOpen = !this.isMobileMenuOpen;
-  }
+  // ── Menu mobile ────────────────────────────────────────────────────────
 
-  closeMobileMenu() {
-    this.isMobileMenuOpen = false;
-  }
+  toggleMobileMenu() { this.isMobileMenuOpen = !this.isMobileMenuOpen; }
+  closeMobileMenu()  { this.isMobileMenuOpen = false; }
 
-  openCalendly() {
-    // @ts-ignore
-    Calendly.initPopupWidget({
-      url: 'https://calendly.com/hamatwalid/30min',
-      color: '#a100ff',
-      textColor: '#ffffff',
-      branding: true
-    });
-  }
-
-  @HostListener('window:scroll', ['$event'])
-  onScroll() {
-    const st = window.scrollY;
-    
-    // Show scrollspy after scrolling down 100px
-    this.showScrollspy = st > 100;
-
-    // Update active section
-    let currentSection = '';
-    for (const section of this.sections) {
-      const element = document.getElementById(section.id);
-      if (element) {
-        const rect = element.getBoundingClientRect();
-        if (rect.top <= 150 && rect.bottom >= 150) {
-          currentSection = section.id;
-          break;
-        }
-      }
-    }
-    this.activeSection = currentSection;
-
-    // Auto-scroll the navigation to keep active section visible
-    if (this.activeSection) {
-      const activeElement = document.querySelector(`[href="#${this.activeSection}"]`) as HTMLElement;
-      if (activeElement) {
-        const container = document.querySelector('.scrollspy-nav') as HTMLElement;
-        if (container) {
-          const scrollLeft = activeElement.getBoundingClientRect().left + container.scrollLeft - 
-                           (container.offsetWidth / 2) + (activeElement.offsetWidth / 2);
-          container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
-        }
-      }
-    }
-
-    this.lastScrollTop = st;
-  }
+  // ── Logo ───────────────────────────────────────────────────────────────
 
   onLogoClick() {
     this.closeMobileMenu();
-    if (this.router.url === '/') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      this.router.navigate(['/']);
+    this.router.url === '/'
+      ? window.scrollTo({ top: 0, behavior: 'smooth' })
+      : this.router.navigate(['/']);
+  }
+
+  // ── Calendly ───────────────────────────────────────────────────────────
+
+  openCalendly() {
+    // @ts-ignore — Calendly est chargé via script externe
+    Calendly.initPopupWidget({
+      url:       CALENDLY_URL,
+      color:     '#a100ff',
+      textColor: '#ffffff',
+      branding:  true
+    });
+  }
+
+  // ── Scrollspy ──────────────────────────────────────────────────────────
+
+  @HostListener('window:scroll')
+  onScroll() {
+    const scrollY = window.scrollY;
+    this.showScrollspy = scrollY > 100;
+    this.updateActiveSection();
+    this.scrollNavToActiveItem();
+  }
+
+  private updateActiveSection() {
+    for (const section of this.sections) {
+      const el = document.getElementById(section.id);
+      if (!el) continue;
+      const { top, bottom } = el.getBoundingClientRect();
+      if (top <= 150 && bottom >= 150) {
+        this.activeSection = section.id;
+        return;
+      }
     }
+    this.activeSection = '';
+  }
+
+  private scrollNavToActiveItem() {
+    if (!this.activeSection) return;
+
+    const activeEl  = document.querySelector(`[href="#${this.activeSection}"]`) as HTMLElement | null;
+    const container = document.querySelector('.scrollspy-nav') as HTMLElement | null;
+    if (!activeEl || !container) return;
+
+    const targetLeft =
+      activeEl.getBoundingClientRect().left +
+      container.scrollLeft -
+      container.offsetWidth / 2 +
+      activeEl.offsetWidth  / 2;
+
+    container.scrollTo({ left: targetLeft, behavior: 'smooth' });
   }
 }

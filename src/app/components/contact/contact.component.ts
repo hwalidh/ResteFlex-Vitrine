@@ -2,8 +2,17 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { EmailService } from '../../services/email.service';
-import { TravelPackEmailParams, BusinessPackEmailParams, SerenityPackEmailParams } from '../../models/email.model';
+import {
+  TravelPackEmailParams,
+  BusinessPackEmailParams,
+  SerenityPackEmailParams
+} from '../../models/email.model';
 import { SuccessPopupComponent } from '../shared/success-popup/success-popup.component';
+import { PACKAGES_CONFIG } from '../../data/packages.config';
+
+// ── Types ──────────────────────────────────────────────────────────────────
+type PackId = 'travel' | 'business' | 'serenity';
+// ───────────────────────────────────────────────────────────────────────────
 
 @Component({
   selector: 'app-contact',
@@ -13,209 +22,172 @@ import { SuccessPopupComponent } from '../shared/success-popup/success-popup.com
   styleUrls: ['./contact.component.scss']
 })
 export class ContactComponent {
-  contactForm: FormGroup;
-  isSubmitting = false;
-  submitted = false;
-  currentStep = 0;
-  emailError = false;
 
-  steps = [
-    { name: 'Pack', emoji: '🎯' },
+  // ── État du formulaire multi-étapes ────────────────────────────────────
+  currentStep = 0;
+  isSubmitting = false;
+  submitted    = false;
+  emailError   = false;
+
+  // ── Étapes de la progression ───────────────────────────────────────────
+  readonly steps = [
+    { name: 'Pack',    emoji: '🎯' },
     { name: 'Contact', emoji: '👋' },
     { name: 'Détails', emoji: '🏠' },
     { name: 'Message', emoji: '✉️' }
   ];
 
-  projectTypes = [
-    {
-      id: 'travel' as const,
-      name: 'Travel Pack',
-      emoji: '🏖️',
-      description: 'Pour les nomades digitaux et les voyageurs qui veulent rentabiliser leur appart pendant leurs aventures !'
-    },
-    {
-      id: 'business' as const,
-      name: 'Business Pack',
-      emoji: '💼',
-      description: 'Pour les investisseurs malins qui veulent maximiser leurs revenus sans prise de tête !'
-    },
-    {
-      id: 'serenity' as const,
-      name: 'Serenity Pack',
-      emoji: '🏡',
-      description: 'Pour ceux qui veulent un loyer garanti supérieur au marché avec une tranquillité absolue !'
-    }
-  ];
+  // ── Données de référence (source unique : packages.config.ts) ──────────
+  readonly packages = PACKAGES_CONFIG;   // Travel / Business / Serenity
 
-  propertyTypes = [
+  readonly propertyTypes = [
     { id: 'apartment', name: 'Appartement' },
-    { id: 'studio', name: 'Studio' },
-    { id: 'room', name: 'Chambre' },
-    { id: 'house', name: 'Maison' }
+    { id: 'studio',    name: 'Studio' },
+    { id: 'room',      name: 'Chambre' },
+    { id: 'house',     name: 'Maison' }
   ];
 
-  propertyStyles = [
-    { id: 'modern', name: 'Moderne & Design' },
+  readonly propertyStyles = [
+    { id: 'modern',  name: 'Moderne & Design' },
     { id: 'classic', name: 'Classique & Élégant' },
-    { id: 'new', name: 'Neuf & Contemporain' },
-    { id: 'old', name: 'Ancien avec Charme' }
+    { id: 'new',     name: 'Neuf & Contemporain' },
+    { id: 'old',     name: 'Ancien avec Charme' }
   ];
+
+  // ── Formulaire réactif ─────────────────────────────────────────────────
+  readonly contactForm: FormGroup;
 
   constructor(
     private fb: FormBuilder,
     private emailService: EmailService
   ) {
     this.contactForm = this.fb.group({
+      // Étape 1
       projectType: ['', Validators.required],
-      name: ['', Validators.required],
+      // Étape 2
+      name:  ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      propertyType: [''],
-      propertyStyle: [''],
-      surface: [''],
-      location: [''],
+      // Étape 3 — Travel
+      propertyType:      [''],
+      propertyStyle:     [''],
+      surface:           [''],
+      location:          [''],
       availabilityStart: [''],
-      availabilityEnd: [''],
-      propertyCount: [''],
+      availabilityEnd:   [''],
+      // Étape 3 — Business
+      propertyCount:  [''],
       investmentType: [''],
       currentRevenue: [''],
-      currentRent: [''],
+      // Étape 3 — Serenity
+      currentRent:   [''],
       propertyValue: [''],
+      // Étape 4
       message: ['', [Validators.required, Validators.minLength(50)]]
     });
   }
 
-  get selectedPack(): 'travel' | 'business' | 'serenity' {
-    return this.contactForm.get('projectType')?.value;
-  }
+  // ── Getters utilitaires ────────────────────────────────────────────────
 
-  get isTravelPack(): boolean {
-    return this.selectedPack === 'travel';
-  }
-
-  get isBusinessPack(): boolean {
-    return this.selectedPack === 'business';
-  }
-
-  get isSerenityPack(): boolean {
-    return this.selectedPack === 'serenity';
+  get selectedPack(): PackId {
+    return this.contactForm.get('projectType')?.value as PackId;
   }
 
   get messageLength(): number {
-    return this.contactForm.get('message')?.value?.length || 0;
+    return this.contactForm.get('message')?.value?.length ?? 0;
   }
 
-  get remainingCharacters(): number {
+  get remainingChars(): number {
     return Math.max(0, 50 - this.messageLength);
   }
 
-  selectProjectType(typeId: 'travel' | 'business' | 'serenity') {
-    this.contactForm.patchValue({ projectType: typeId });
+  // ── Navigation entre étapes ────────────────────────────────────────────
+
+  nextStep()     { if (this.currentStep < this.steps.length - 1) this.currentStep++; }
+  previousStep() { if (this.currentStep > 0) this.currentStep--; }
+
+  selectPack(id: PackId) {
+    this.contactForm.patchValue({ projectType: id });
   }
 
-  nextStep() {
-    if (this.currentStep < this.steps.length - 1) {
-      this.currentStep++;
+  // ── Validation ─────────────────────────────────────────────────────────
+
+  isInvalid(field: string): boolean {
+    const ctrl = this.contactForm.get(field);
+    return !!ctrl && ctrl.invalid && (ctrl.dirty || ctrl.touched);
+  }
+
+  // ── Soumission ─────────────────────────────────────────────────────────
+
+  async onSubmit(): Promise<void> {
+    if (!this.contactForm.valid) {
+      Object.values(this.contactForm.controls).forEach(c => c.markAsTouched());
+      return;
+    }
+
+    this.isSubmitting = true;
+    this.emailError   = false;
+
+    try {
+      const ok = await this.sendEmail(this.contactForm.value);
+      ok ? (this.submitted = true) : (this.emailError = true);
+    } catch (err) {
+      console.error('[Contact] Erreur envoi email :', err);
+      this.emailError = true;
+    } finally {
+      this.isSubmitting = false;
     }
   }
 
-  previousStep() {
-    if (this.currentStep > 0) {
-      this.currentStep--;
-    }
-  }
+  closePopup() { this.submitted = false; }
 
-  isFieldInvalid(fieldName: string): boolean {
-    const field = this.contactForm.get(fieldName);
-    return field ? field.invalid && (field.dirty || field.touched) : false;
-  }
+  // ── Envoi email selon le pack sélectionné ─────────────────────────────
 
-  closePopup() {
-    this.submitted = false;
-  }
-
-  async onSubmit() {
-    if (this.contactForm.valid) {
-      this.isSubmitting = true;
-      this.emailError = false;
-      
-      try {
-        const formData = this.contactForm.value;
-        const success = await this.sendEmailByPackType(formData);
-
-        if (success) {
-          this.submitted = true;
-        } else {
-          this.emailError = true;
-        }
-      } catch (error) {
-        console.error('Erreur lors de l\'envoi de l\'email:', error);
-        this.emailError = true;
-      } finally {
-        this.isSubmitting = false;
-      }
-    } else {
-      Object.keys(this.contactForm.controls).forEach(key => {
-        const control = this.contactForm.get(key);
-        if (control) {
-          control.markAsTouched();
-        }
-      });
-    }
-  }
-
-  private async sendEmailByPackType(formData: any): Promise<boolean> {
-    const baseParams = {
-      to_name: 'Walid',
-      from_name: formData.name,
-      from_email: formData.email,
-      pack_type: this.getPackTypeName(formData.projectType),
-      message: formData.message || ''
+  private sendEmail(d: ReturnType<typeof this.contactForm.getRawValue>): Promise<boolean> {
+    const base = {
+      to_name:   'Walid',
+      from_name: d.name,
+      from_email: d.email,
+      pack_type:  this.labelOf(this.packages, d.projectType),
+      message:    d.message || ''
     };
 
-    switch (formData.projectType) {
+    switch (d.projectType as PackId) {
       case 'travel':
         return this.emailService.sendTravelPackEmail({
-          ...baseParams,
-          propertyType: this.getPropertyTypeName(formData.propertyType),
-          propertyStyle: this.getPropertyStyleName(formData.propertyStyle),
-          surface: formData.surface,
-          location: formData.location,
-          availabilityStart: formData.availabilityStart,
-          availabilityEnd: formData.availabilityEnd
-        });
+          ...base,
+          propertyType:      this.labelOf(this.propertyTypes,  d.propertyType),
+          propertyStyle:     this.labelOf(this.propertyStyles, d.propertyStyle),
+          surface:           d.surface,
+          location:          d.location,
+          availabilityStart: d.availabilityStart,
+          availabilityEnd:   d.availabilityEnd
+        } as TravelPackEmailParams);
 
       case 'business':
         return this.emailService.sendBusinessPackEmail({
-          ...baseParams,
-          propertyCount: formData.propertyCount,
-          investmentType: formData.investmentType,
-          currentRevenue: formData.currentRevenue
-        });
+          ...base,
+          propertyCount:  d.propertyCount,
+          investmentType: d.investmentType,
+          currentRevenue: d.currentRevenue
+        } as BusinessPackEmailParams);
 
       case 'serenity':
         return this.emailService.sendSerenityPackEmail({
-          ...baseParams,
-          propertyType: this.getPropertyTypeName(formData.propertyType),
-          surface: formData.surface,
-          location: formData.location,
-          currentRent: formData.currentRent,
-          propertyValue: formData.propertyValue
-        });
+          ...base,
+          propertyType:  this.labelOf(this.propertyTypes, d.propertyType),
+          surface:       d.surface,
+          location:      d.location,
+          currentRent:   d.currentRent,
+          propertyValue: d.propertyValue
+        } as SerenityPackEmailParams);
 
       default:
-        return false;
+        return Promise.resolve(false);
     }
   }
 
-  private getPackTypeName(id: string): string {
-    return this.projectTypes.find(type => type.id === id)?.name || id;
-  }
-
-  private getPropertyTypeName(id: string): string {
-    return this.propertyTypes.find(type => type.id === id)?.name || id;
-  }
-
-  private getPropertyStyleName(id: string): string {
-    return this.propertyStyles.find(style => style.id === id)?.name || id;
+  /** Retourne le label lisible d'un item à partir de son id. */
+  private labelOf(list: { id: string; name: string }[], id: string): string {
+    return list.find(item => item.id === id)?.name ?? id;
   }
 }

@@ -4,14 +4,14 @@
     <div *ngIf="selectedPack && currentStep > 0" class="max-w-3xl mx-auto mb-8">
       <div class="bg-violet-50 rounded-xl p-4 flex items-center space-x-4">
         <div class="w-12 h-12 bg-violet-100 rounded-full flex items-center justify-center text-2xl">
-          {{ isTravelPack ? '🏖️' : '💼' }}
+          {{ selectedPack === 'travel' ? '🏖️' : selectedPack === 'business' ? '💼' : '🏡' }}
         </div>
         <div>
           <h3 class="font-bold text-violet-900">
-            {{ isTravelPack ? 'Travel Pack' : 'Business Pack' }}
+            {{ selectedPack === 'travel' ? 'Travel Pack' : selectedPack === 'business' ? 'Business Pack' : 'Serenity Pack' }}
           </h3>
           <p class="text-sm text-violet-600">
-            {{ isTravelPack ? 'Pour les nomades digitaux' : 'Pour les investisseurs malins' }}
+            {{ selectedPack === 'travel' ? 'Pour les nomades digitaux' : selectedPack === 'business' ? 'Pour les investisseurs malins' : 'Loyer garanti' }}
           </p>
         </div>
       </div>
@@ -76,13 +76,13 @@
           </h2>
 
           <div class="grid md:grid-cols-2 gap-6">
-            <div *ngFor="let type of projectTypes" 
-                 (click)="selectProjectType(type.id)"
+            <div *ngFor="let type of packages" 
+                 (click)="selectPack(type.id)"
                  [class.selected]="contactForm.get('projectType')?.value === type.id"
                  class="project-card">
               <div class="p-6 rounded-2xl bg-white shadow-lg border-2 transition-all duration-300"
-                   [class.border-violet-500]="contactForm.get('projectType')?.value === type.id"
-                   [class.border-transparent]="contactForm.get('projectType')?.value !== type.id">
+                   [class.border-violet-500]="selectedPack === type.id"
+                   [class.border-transparent]="selectedPack !== type.id">
                 <div class="project-icon text-4xl mb-4">{{type.emoji}}</div>
                 <h3 class="text-xl font-bold mb-2">{{type.name}}</h3>
                 <p class="text-gray-600">{{type.description}}</p>
@@ -113,10 +113,10 @@
                      formControlName="name" 
                      class="form-input peer" 
                      placeholder=" "
-                     [class.error]="isFieldInvalid('name')">
+                     [class.error]="isInvalid('name')">
               <label class="floating-label">Ton petit nom</label>
               <div class="input-emoji">👤</div>
-              <div *ngIf="isFieldInvalid('name')" class="text-red-500 text-sm mt-1">
+              <div *ngIf="isInvalid('name')" class="text-red-500 text-sm mt-1">
                 Hey ! On aimerait connaître ton nom 😊
               </div>
             </div>
@@ -126,10 +126,10 @@
                      formControlName="email" 
                      class="form-input peer" 
                      placeholder=" "
-                     [class.error]="isFieldInvalid('email')">
+                     [class.error]="isInvalid('email')">
               <label class="floating-label">Ton email (promis on spam pas)</label>
               <div class="input-emoji">📧</div>
-              <div *ngIf="isFieldInvalid('email')" class="text-red-500 text-sm mt-1">
+              <div *ngIf="isInvalid('email')" class="text-red-500 text-sm mt-1">
                 Oups ! On dirait que cet email n'est pas valide 🤔
               </div>
             </div>
@@ -151,7 +151,7 @@
         <!-- Étape 3: Détails spécifiques au pack -->
         <div *ngIf="currentStep === 2" class="space-y-6 animate-slide-up">
           <!-- Travel Pack -->
-          <div *ngIf="isTravelPack">
+          <div *ngIf="selectedPack === 'travel'">
             <h2 class="text-2xl font-bold text-gray-800 text-center mb-8">
               Parle-nous de ton petit nid ! 🏠<br>
               <span class="text-lg font-normal text-gray-600">Plus on en sait, mieux on peut t'aider à le rentabiliser !</span>
@@ -207,7 +207,7 @@
           </div>
 
           <!-- Business Pack -->
-          <div *ngIf="isBusinessPack">
+          <div *ngIf="selectedPack === 'business'">
             <h2 class="text-2xl font-bold text-gray-800 text-center mb-8">
               Parlons business ! 💼<br>
               <span class="text-lg font-normal text-gray-600">On va booster tes revenus ensemble !</span>
@@ -252,10 +252,10 @@
         <!-- Étape 4: Message final -->
         <div *ngIf="currentStep === 3" class="space-y-6 animate-slide-up">
           <h2 class="text-2xl font-bold text-gray-800 text-center mb-8">
-            <span *ngIf="isTravelPack">Un dernier truc à ajouter ? 💭<br>
+            <span *ngIf="selectedPack === 'travel'">Un dernier truc à ajouter ? 💭<br>
               <span class="text-lg font-normal text-gray-600">Des détails sur ton bien, tes attentes, tes questions...</span>
             </span>
-            <span *ngIf="isBusinessPack">Ta vision ? 🎯<br>
+            <span *ngIf="selectedPack === 'business'">Ta vision ? 🎯<br>
               <span class="text-lg font-normal text-gray-600">Objectifs de revenus, stratégie, contraintes...</span>
             </span>
           </h2>
@@ -266,15 +266,15 @@
               rows="4"
               class="form-input peer"
               placeholder=" "
-              [class.error]="isFieldInvalid('message')"
+              [class.error]="isInvalid('message')"
             ></textarea>
             <label class="floating-label">Balance tout ! (minimum 50 caractères)</label>
             <div class="input-emoji">💭</div>
-            <div class="text-sm mt-2" [class.text-red-500]="isFieldInvalid('message')" [class.text-gray-500]="!isFieldInvalid('message')">
+            <div class="text-sm mt-2" [class.text-red-500]="isInvalid('message')" [class.text-gray-500]="!isInvalid('message')">
               {{ messageLength }}/50 caractères
-              <span *ngIf="remainingCharacters > 0">(encore {{ remainingCharacters }} caractères requis)</span>
+              <span *ngIf="remainingChars > 0">(encore {{ remainingChars }} caractères requis)</span>
             </div>
-            <div *ngIf="isFieldInvalid('message')" class="text-red-500 text-sm mt-1">
+            <div *ngIf="isInvalid('message')" class="text-red-500 text-sm mt-1">
               Hey ! On a besoin d'un peu plus de détails (minimum 50 caractères) 😊
             </div>
           </div>

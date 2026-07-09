@@ -1,177 +1,159 @@
 import { Injectable } from '@angular/core';
 import emailjs from '@emailjs/browser';
-import { EmailTemplateParams, TravelPackEmailParams, BusinessPackEmailParams, SerenityPackEmailParams } from '../models/email.model';
+import {
+  EmailTemplateParams,
+  TravelPackEmailParams,
+  BusinessPackEmailParams,
+  SerenityPackEmailParams
+} from '../models/email.model';
 
-@Injectable({
-  providedIn: 'root'
-})
+// ─── Config ────────────────────────────────────────────────────────────────
+const EMAILJS_PUBLIC_KEY  = 'NnBbZBZ1s92vIo5CK';
+const EMAILJS_SERVICE_ID  = 'service_mynhvri';
+
+const TEMPLATES = {
+  TRAVEL:   'template_dkqxg6j',
+  BUSINESS: 'template_za456ha',
+  SERENITY: 'template_za456ha'   // TODO: remplacer par un vrai template Serenity
+} as const;
+
+const INVESTMENT_TYPE_LABELS: Record<string, string> = {
+  existing: 'Biens déjà en location',
+  new:      'Nouveau projet',
+  mix:      'Mix des deux'
+};
+// ───────────────────────────────────────────────────────────────────────────
+
+@Injectable({ providedIn: 'root' })
 export class EmailService {
-  private readonly PUBLIC_KEY = 'NnBbZBZ1s92vIo5CK';
-  private readonly SERVICE_ID = 'service_mynhvri';
-  private readonly TEMPLATES = {
-    TRAVEL: 'template_dkqxg6j',
-    BUSINESS: 'template_za456ha',
-    // Temporarily use business template for serenity pack
-    SERENITY: 'template_za456ha'
-  };
+
   private initialized = false;
 
   constructor() {
-    this.initEmailJS();
+    this.init();
   }
 
-  private async initEmailJS() {
-    if (!this.initialized) {
-      try {
-        await emailjs.init(this.PUBLIC_KEY);
-        this.initialized = true;
-      } catch (error) {
-        console.error('Failed to initialize EmailJS:', error);
-      }
+  // ── Public API ────────────────────────────────────────────────────────────
+
+  sendTravelPackEmail(params: TravelPackEmailParams): Promise<boolean> {
+    return this.send(TEMPLATES.TRAVEL, {
+      ...params,
+      subject: `Nouvelle demande Travel Pack - ${params.from_name}`,
+      property_type:    params.propertyType  || 'Non spécifié',
+      property_style:   params.propertyStyle || 'Non spécifié',
+      surface:          params.surface ? `${params.surface} m²` : 'Non spécifiée',
+      location:         params.location || 'Non spécifiée',
+      availability_start: this.formatDate(params.availabilityStart),
+      availability_end:   this.formatDate(params.availabilityEnd),
+      property_details: [
+        '🏠 DÉTAILS DU BIEN',
+        '──────────────',
+        `• Type de bien : ${params.propertyType  || 'Non spécifié'}`,
+        `• Style        : ${params.propertyStyle || 'Non spécifié'}`,
+        `• Surface      : ${params.surface ? params.surface + ' m²' : 'Non spécifiée'}`,
+        `• Localisation : ${params.location || 'Non spécifiée'}`,
+        '',
+        '📅 DISPONIBILITÉS',
+        '──────────────',
+        `• Du : ${this.formatDate(params.availabilityStart)}`,
+        `• Au : ${this.formatDate(params.availabilityEnd)}`,
+        '',
+        ...this.clientBlock(params),
+        ...this.messageBlock(params.message)
+      ].join('\n')
+    });
+  }
+
+  sendBusinessPackEmail(params: BusinessPackEmailParams): Promise<boolean> {
+    return this.send(TEMPLATES.BUSINESS, {
+      ...params,
+      subject:          `Nouvelle demande Business Pack - ${params.from_name}`,
+      property_count:   params.propertyCount || 'Non spécifié',
+      investment_type:  INVESTMENT_TYPE_LABELS[params.investmentType] ?? 'Non spécifié',
+      current_revenue:  params.currentRevenue || 'Non spécifié',
+      business_details: [
+        '💼 DÉTAILS BUSINESS',
+        '──────────────',
+        `• Nombre de biens        : ${params.propertyCount || 'Non spécifié'}`,
+        `• Type d'investissement  : ${INVESTMENT_TYPE_LABELS[params.investmentType] ?? 'Non spécifié'}`,
+        `• Revenus actuels        : ${params.currentRevenue || 'Non spécifiés'}`,
+        '',
+        ...this.clientBlock(params),
+        ...this.messageBlock(params.message)
+      ].join('\n')
+    });
+  }
+
+  sendSerenityPackEmail(params: SerenityPackEmailParams): Promise<boolean> {
+    return this.send(TEMPLATES.SERENITY, {
+      ...params,
+      subject: `Nouvelle demande Serenity Pack - ${params.from_name}`,
+      property_details: [
+        '🏠 DÉTAILS DU BIEN',
+        '──────────────',
+        `• Type de bien    : ${params.propertyType  || 'Non spécifié'}`,
+        `• Surface         : ${params.surface ? params.surface + ' m²' : 'Non spécifiée'}`,
+        `• Localisation    : ${params.location || 'Non spécifiée'}`,
+        `• Loyer actuel    : ${params.currentRent   || 'Non spécifié'}`,
+        `• Valeur du bien  : ${params.propertyValue || 'Non spécifiée'}`,
+        '',
+        ...this.clientBlock(params),
+        ...this.messageBlock(params.message)
+      ].join('\n')
+    });
+  }
+
+  // ── Private helpers ───────────────────────────────────────────────────────
+
+  private async init(): Promise<void> {
+    if (this.initialized) return;
+    try {
+      await emailjs.init(EMAILJS_PUBLIC_KEY);
+      this.initialized = true;
+    } catch (err) {
+      console.error('[EmailService] Initialisation échouée :', err);
     }
   }
 
-  async sendTravelPackEmail(params: TravelPackEmailParams): Promise<boolean> {
-    const formattedParams = this.formatTravelPackParams(params);
-    return this.sendEmailTemplate(this.TEMPLATES.TRAVEL, formattedParams);
-  }
-
-  async sendBusinessPackEmail(params: BusinessPackEmailParams): Promise<boolean> {
-    const formattedParams = this.formatBusinessPackParams(params);
-    return this.sendEmailTemplate(this.TEMPLATES.BUSINESS, formattedParams);
-  }
-
-  async sendSerenityPackEmail(params: SerenityPackEmailParams): Promise<boolean> {
-    const formattedParams = this.formatSerenityPackParams(params);
-    return this.sendEmailTemplate(this.TEMPLATES.SERENITY, formattedParams);
-  }
-
-  private async sendEmailTemplate(templateId: string, params: EmailTemplateParams): Promise<boolean> {
+  private async send(templateId: string, params: EmailTemplateParams): Promise<boolean> {
+    if (!this.initialized) await this.init();
     try {
-      if (!this.initialized) {
-        await this.initEmailJS();
-      }
-
-      const response = await emailjs.send(
-        this.SERVICE_ID,
-        templateId,
-        params
-      );
-
-      return response.status === 200;
-    } catch (error) {
-      console.error('Erreur lors de l\'envoi de l\'email:', error);
+      const res = await emailjs.send(EMAILJS_SERVICE_ID, templateId, params);
+      return res.status === 200;
+    } catch (err) {
+      console.error('[EmailService] Envoi échoué :', err);
       return false;
     }
   }
 
-  private formatTravelPackParams(params: TravelPackEmailParams): EmailTemplateParams {
-    const formattedDate = (date: string) => {
-      if (!date) return 'Non spécifié';
-      return new Date(date).toLocaleDateString('fr-FR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      });
-    };
-
-    return {
-      ...params,
-      subject: `Nouvelle demande Travel Pack - ${params.from_name}`,
-      property_type: params.propertyType || 'Non spécifié',
-      property_style: params.propertyStyle || 'Non spécifié',
-      surface: params.surface ? `${params.surface} m²` : 'Non spécifiée',
-      location: params.location || 'Non spécifiée',
-      availability_start: formattedDate(params.availabilityStart),
-      availability_end: formattedDate(params.availabilityEnd),
-      property_details: `
-🏠 DÉTAILS DU BIEN
-──────────────
-• Type de bien : ${params.propertyType || 'Non spécifié'}
-• Style : ${params.propertyStyle || 'Non spécifié'}
-• Surface : ${params.surface ? params.surface + ' m²' : 'Non spécifiée'}
-• Localisation : ${params.location || 'Non spécifiée'}
-
-📅 DISPONIBILITÉS
-──────────────
-• Du : ${formattedDate(params.availabilityStart)}
-• Au : ${formattedDate(params.availabilityEnd)}
-
-👤 INFORMATIONS CLIENT
-──────────────
-• Nom : ${params.from_name}
-• Email : ${params.from_email}
-
-💭 MESSAGE
-──────────────
-${params.message || 'Aucun message supplémentaire'}
-
-──────────────
-Envoyé depuis StayFlex Conciergerie
-      `.trim()
-    };
+  /** Formate une date ISO en français (ex: "12 janvier 2025"). */
+  private formatDate(iso: string): string {
+    if (!iso) return 'Non spécifié';
+    return new Date(iso).toLocaleDateString('fr-FR', {
+      day: 'numeric', month: 'long', year: 'numeric'
+    });
   }
 
-  private formatBusinessPackParams(params: BusinessPackEmailParams): EmailTemplateParams {
-    const investmentTypes = {
-      'existing': 'Biens déjà en location',
-      'new': 'Nouveau projet',
-      'mix': 'Mix des deux'
-    };
-
-    return {
-      ...params,
-      subject: `Nouvelle demande Business Pack - ${params.from_name}`,
-      property_count: params.propertyCount || 'Non spécifié',
-      investment_type: params.investmentType ? investmentTypes[params.investmentType as keyof typeof investmentTypes] : 'Non spécifié',
-      current_revenue: params.currentRevenue || 'Non spécifié',
-      business_details: `
-💼 DÉTAILS BUSINESS
-──────────────
-• Nombre de biens : ${params.propertyCount || 'Non spécifié'}
-• Type d'investissement : ${params.investmentType ? investmentTypes[params.investmentType as keyof typeof investmentTypes] : 'Non spécifié'}
-• Revenus actuels : ${params.currentRevenue || 'Non spécifiés'}
-
-👤 INFORMATIONS CLIENT
-──────────────
-• Nom : ${params.from_name}
-• Email : ${params.from_email}
-
-💭 MESSAGE
-──────────────
-${params.message || 'Aucun message supplémentaire'}
-
-──────────────
-Envoyé depuis StayFlex Conciergerie
-      `.trim()
-    };
+  /** Bloc "Informations client" commun à tous les emails. */
+  private clientBlock(p: EmailTemplateParams): string[] {
+    return [
+      '👤 INFORMATIONS CLIENT',
+      '──────────────',
+      `• Nom   : ${p.from_name}`,
+      `• Email : ${p.from_email}`,
+      ''
+    ];
   }
 
-  private formatSerenityPackParams(params: SerenityPackEmailParams): EmailTemplateParams {
-    return {
-      ...params,
-      subject: `Nouvelle demande Serenity Pack - ${params.from_name}`,
-      property_details: `
-🏠 DÉTAILS DU BIEN
-──────────────
-• Type de bien : ${params.propertyType || 'Non spécifié'}
-• Surface : ${params.surface ? params.surface + ' m²' : 'Non spécifiée'}
-• Localisation : ${params.location || 'Non spécifiée'}
-• Loyer actuel : ${params.currentRent || 'Non spécifié'}
-• Valeur du bien : ${params.propertyValue || 'Non spécifiée'}
-
-👤 INFORMATIONS CLIENT
-──────────────
-• Nom : ${params.from_name}
-• Email : ${params.from_email}
-
-💭 MESSAGE
-──────────────
-${params.message || 'Aucun message supplémentaire'}
-
-──────────────
-Envoyé depuis StayFlex Conciergerie
-      `.trim()
-    };
+  /** Bloc "Message" commun à tous les emails. */
+  private messageBlock(msg: string | undefined): string[] {
+    return [
+      '💭 MESSAGE',
+      '──────────────',
+      msg || 'Aucun message supplémentaire',
+      '',
+      '──────────────',
+      'Envoyé depuis ResteFlex Conciergerie'
+    ];
   }
 }
