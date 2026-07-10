@@ -1,35 +1,37 @@
 import { Injectable } from '@angular/core';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SeederService {
-  private supabase = createClient(environment.supabase.url, environment.supabase.anonKey);
+  private supabase: SupabaseClient;
   private seeded = false;
+
+  constructor() {
+    this.supabase = createClient(environment.supabase.url, environment.supabase.anonKey);
+  }
 
   async initializeDatabase(): Promise<void> {
     if (this.seeded) return;
 
     try {
+      console.log('Starting database initialization...');
+      
       // Vérifier si les données existent déjà
       const { data, error } = await this.supabase
         .from('listings')
         .select('id')
         .limit(1);
 
-      if (error) {
-        console.error('Error checking listings:', error);
-        return;
-      }
-
-      // Si des données existent déjà, ne pas re-seeder
-      if (data && data.length > 0) {
-        console.log('Database already seeded');
+      if (!error && data && data.length > 0) {
+        console.log('Database already has listings, skipping seed');
         this.seeded = true;
         return;
       }
+
+      console.log('Database empty, creating tables and seeding data...');
 
       // Insérer les 3 logements de test
       const listings = [
@@ -68,14 +70,15 @@ export class SeederService {
         }
       ];
 
-      const { error: insertError } = await this.supabase
+      const { error: insertError, data: insertedData } = await this.supabase
         .from('listings')
-        .insert(listings);
+        .insert(listings)
+        .select();
 
       if (insertError) {
         console.error('Error seeding database:', insertError);
       } else {
-        console.log('Database seeded successfully with 3 listings');
+        console.log('Database seeded successfully with 3 listings', insertedData);
         this.seeded = true;
       }
     } catch (error) {

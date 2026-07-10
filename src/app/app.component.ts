@@ -3,7 +3,6 @@ import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './components/header/header.component';
 import { CalendlyButtonComponent } from './components/shared/calendly-button/calendly-button.component';
 import { SeederService } from './services/seeder.service';
-import { DatabaseInitService } from './services/database-init.service';
 
 @Component({
   selector: 'app-root',
@@ -22,16 +21,10 @@ import { DatabaseInitService } from './services/database-init.service';
   `]
 })
 export class AppComponent implements OnInit {
-  constructor(
-    private seeder: SeederService,
-    private dbInit: DatabaseInitService
-  ) {}
+  constructor(private seeder: SeederService) {}
 
   ngOnInit() {
-    // Initialize database via Netlify Function
-    this.dbInit.initializeDatabase();
-    
-    // Also try the client-side seeder as fallback
+    // Initialize database on app startup
     this.seeder.initializeDatabase();
   }
 }
