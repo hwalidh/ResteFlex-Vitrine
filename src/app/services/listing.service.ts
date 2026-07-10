@@ -1,33 +1,28 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { AirbnbListing } from '../models/listing.model';
-import { AIRBNB_LISTINGS } from '../data/airbnb-listings';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ListingService {
-  constructor() { }
+  private apiUrl = 'http://localhost:3001/api/listings';
+
+  constructor(private http: HttpClient) { }
 
   /**
-   * Get all Airbnb listings
+   * Get all Airbnb listings from backend API
    */
   getAllListings(): Observable<AirbnbListing[]> {
-    return of(AIRBNB_LISTINGS);
+    return this.http.get<AirbnbListing[]>(this.apiUrl);
   }
 
   /**
    * Get a single listing by ID
    */
-  getListingById(id: string): Observable<AirbnbListing | undefined> {
-    return of(AIRBNB_LISTINGS.find(listing => listing.id === id));
-  }
-
-  /**
-   * Get listings by location
-   */
-  getListingsByLocation(location: string): Observable<AirbnbListing[]> {
-    return of(AIRBNB_LISTINGS.filter(listing => listing.location.toLowerCase().includes(location.toLowerCase())));
+  getListingById(id: string): Observable<AirbnbListing> {
+    return this.http.get<AirbnbListing>(`${this.apiUrl}/${id}`);
   }
 
   /**
@@ -40,24 +35,24 @@ export class ListingService {
     minGuests?: number;
     location?: string;
   }): Observable<AirbnbListing[]> {
-    let filtered = [...AIRBNB_LISTINGS];
-
+    let params = new HttpParams();
+    
     if (filters.minPrice !== undefined) {
-      filtered = filtered.filter(l => l.pricePerNight >= filters.minPrice!);
+      params = params.set('minPrice', filters.minPrice.toString());
     }
     if (filters.maxPrice !== undefined) {
-      filtered = filtered.filter(l => l.pricePerNight <= filters.maxPrice!);
+      params = params.set('maxPrice', filters.maxPrice.toString());
     }
     if (filters.minBedrooms !== undefined) {
-      filtered = filtered.filter(l => l.bedrooms >= filters.minBedrooms!);
+      params = params.set('minBedrooms', filters.minBedrooms.toString());
     }
     if (filters.minGuests !== undefined) {
-      filtered = filtered.filter(l => l.guests >= filters.minGuests!);
+      params = params.set('minGuests', filters.minGuests.toString());
     }
     if (filters.location) {
-      filtered = filtered.filter(l => l.location.toLowerCase().includes(filters.location!.toLowerCase()));
+      params = params.set('location', filters.location);
     }
 
-    return of(filtered);
+    return this.http.get<AirbnbListing[]>(`${this.apiUrl}/search`, { params });
   }
 }
