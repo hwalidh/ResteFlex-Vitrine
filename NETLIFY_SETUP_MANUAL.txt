@@ -1,0 +1,58 @@
+# Setup Manual: Ajouter les Variables Netlify
+
+## Étapes pour configurer les variables d'environnement
+
+### 1. Aller sur Netlify
+- Ouvre: https://app.netlify.com
+- Connecte-toi si nécessaire
+
+### 2. Sélectionner ton site
+- Clique sur **resteflex-concierge**
+
+### 3. Accéder aux paramètres
+- En haut à droite, clique sur **Site settings**
+
+### 4. Accéder aux variables d'environnement
+- Menu de gauche: **Build & deploy**
+- Clique sur **Environment**
+
+### 5. Ajouter les variables
+Clique sur **Edit variables** ou **Add a variable**
+
+**Variable 1 - SUPABASE_URL:**
+```
+Key:   SUPABASE_URL
+Value: https://ocutxszgjnmztdawuwgt.supabase.co
+```
+
+**Variable 2 - SUPABASE_ANON_KEY:**
+```
+Key:   SUPABASE_ANON_KEY
+Value: sb_publishable_7-jupaDnqhSq7u-vrs5Cpg_4DsoOYgQ
+```
+
+### 6. Sauvegarder
+Clique **Save**
+
+### 7. Redéployer
+- Va dans l'onglet **Deploys**
+- Clique sur le dernier deploy
+- Clique **Trigger deploy** → **Deploy site**
+
+### 8. Attendre
+- Le build prend 2-3 minutes
+- Tu verras le statut passer à ✅ **Published**
+
+### 9. Vérifier
+- Visite ton site: https://resteflex-concierge.netlify.app (ou ton URL)
+- Va sur `/listings`
+- Les 3 logements s'afficheront automatiquement! 🎉
+
+## Qu'est-ce qui se passe automatiquement:
+1. App charge et appelle la Netlify Function
+2. Fonction utilise les variables d'env pour se connecter à Supabase
+3. Crée les tables `listings` et `bookings`
+4. Insère 3 propriétés test
+5. ListingsComponent affiche tous les logements
+
+**Zéro intervention SQL nécessaire!**
