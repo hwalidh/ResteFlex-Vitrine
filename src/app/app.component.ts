@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './components/header/header.component';
 import { CalendlyButtonComponent } from './components/shared/calendly-button/calendly-button.component';
+import { SeederService } from './services/seeder.service';
 
 @Component({
   selector: 'app-root',
@@ -19,4 +20,11 @@ import { CalendlyButtonComponent } from './components/shared/calendly-button/cal
     }
   `]
 })
-export class AppComponent {}
+export class AppComponent implements OnInit {
+  constructor(private seeder: SeederService) {}
+
+  ngOnInit() {
+    // Initialize database on app startup
+    this.seeder.initializeDatabase();
+  }
+}

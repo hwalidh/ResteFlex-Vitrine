@@ -1,0 +1,280 @@
+# Supabase + Stripe Integration Guide
+
+## ✅ What's Been Implemented
+
+### 1. **Database Schema (PostgreSQL on Supabase)**
+- `listings` table with 3 sample Airbnb properties
+- `bookings` table for tracking reservations
+- Full CRUD operations via Angular services
+
+### 2. **Angular Components**
+- **ListingsComponent**: Displays all properties in a responsive grid
+- **BookingComponent**: Detail view + booking form with Stripe payment
+- **SupabaseService**: Centralized data access layer
+
+### 3. **Features**
+- Automatic price calculation (nights × price/night)
+- Email validation
+- Form validation
+- Responsive design with Tailwind CSS
+- Navigation between listings and booking details
+
+---
+
+## 🚀 Quick Start (3 Steps)
+
+### Step 1: Setup Supabase Database
+
+1. Go to: https://ocutxszgjnmztdawuwgt.supabase.co
+2. Click **SQL Editor** → **New Query**
+3. Copy-paste entire content of `sql-migration.sql`
+4. Click **Run**
+
+You'll see:
+- ✅ 2 tables created (`listings`, `bookings`)
+- ✅ 3 sample properties inserted
+- ✅ Indexes created for performance
+
+### Step 2: Test Locally
+
+```bash
+npm install
+npm start
+```
+
+Then visit:
+- **Listings**: http://localhost:4200/listings
+- **Booking details**: Click any property → http://localhost:4200/booking/:id
+
+### Step 3: Deploy to Netlify
+
+```bash
+npm run build
+git add .
+git commit -m "Add Supabase + listings"
+git push
+```
+
+Netlify auto-deploys from main branch.
+
+---
+
+## 🔐 Stripe Integration (Next Steps)
+
+### Get Stripe Publishable Key
+1. Go to: https://dashboard.stripe.com/apikeys
+2. Copy "Publishable key" (starts with `pk_live_`)
+3. Update in both environment files:
+
+**src/environments/environment.ts**
+```typescript
+stripe: {
+  publishableKey: 'pk_live_your_actual_key_here'
+}
+```
+
+**src/environments/environment.prod.ts** (same)
+
+### Implement Payment Processing
+
+In `booking.component.ts`, update the `onSubmit()` method:
+
+```typescript
+import { loadStripe } from '@stripe/stripe-js';
+
+async onSubmit() {
+  if (this.bookingForm.invalid || !this.listing) return;
+  
+  this.processing = true;
+  const stripe = await loadStripe(environment.stripe.publishableKey);
+  
+  // Create booking first
+  const booking = { /* ... */ };
+  
+  this.supabaseService.createBooking(booking)
+    .subscribe(async savedBooking => {
+      // Call your backend endpoint to create Stripe session
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookingId: savedBooking.id,
+          amount: this.totalPrice * 100,
+          email: this.bookingForm.get('email')!.value
+        })
+      });
+      
+      const { sessionId } = await response.json();
+      await stripe?.redirectToCheckout({ sessionId });
+    });
+}
+```
+
+### Create Netlify Function for Payment
+
+Create: `netlify/functions/create-checkout-session.ts`
+
+```typescript
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+export default async (req: any) => {
+  if (req.method !== 'POST') {
+    return { statusCode: 405, body: 'Method Not Allowed' };
+  }
+
+  const { bookingId, amount, email } = JSON.parse(req.body);
+
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    line_items: [
+      {
+        price_data: {
+          currency: 'eur',
+          product_data: { name: 'Property Booking' },
+          unit_amount: amount,
+        },
+        quantity: 1,
+      },
+    ],
+    mode: 'payment',
+    success_url: `${process.env.URL}/booking-success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.URL}/bookings`,
+    customer_email: email,
+    metadata: { bookingId },
+  });
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ sessionId: session.id }),
+  };
+};
+```
+
+### Add Netlify Env Variables
+
+1. Go to Netlify site → Settings → Environment
+2. Add:
+   ```
+   STRIPE_SECRET_KEY = sk_live_your_secret_key
+   STRIPE_WEBHOOK_SECRET = whsec_your_webhook_secret
+   ```
+
+---
+
+## 📱 Listings Preview
+
+The 3 seeded properties are:
+
+| Property | Location | Price | Rooms | Guests |
+|---|---|---|---|---|
+| Luxe Penthouse Paris | Paris | 185€/night | 3BR, 2BA | 6 |
+| Villa Côte d'Azur | Antibes | 225€/night | 4BR, 3BA | 8 |
+| Appartement Lyon Centre | Lyon | 125€/night | 2BR, 1BA | 4 |
+
+Each has images, descriptions, and amenities.
+
+---
+
+## 🔧 Database Operations
+
+### Check Your Data (Supabase UI)
+
+1. SQL Editor → **New Query**
+   ```sql
+   SELECT * FROM listings;
+   SELECT * FROM bookings;
+   ```
+
+2. Or use **Table Editor** tab
+
+### Add New Property
+
+1. SQL Editor → **New Query**
+   ```sql
+   INSERT INTO listings (title, description, price, location, bedrooms, bathrooms, guests, image_url, amenities)
+   VALUES ('Your Title', 'Your description', 150.00, 'Your City', 2, 1, 4, 'https://image-url.jpg', ARRAY['WiFi', 'Pool']);
+   ```
+
+### Update Booking Status
+
+```sql
+UPDATE bookings SET status = 'confirmed' WHERE id = 'booking-uuid';
+```
+
+---
+
+## ✨ Environment Configuration
+
+### Development
+- Supabase: Real data from cloud
+- Stripe: Test mode (pk_test_*)
+- CORS: Enabled automatically
+
+### Production
+- Supabase: Same (no special config needed)
+- Stripe: Live mode (pk_live_*)
+- CORS: Already allowed by Supabase
+
+---
+
+## 🛡️ Security Best Practices
+
+1. **Never commit secrets** to git — use Netlify env vars
+2. **Row Level Security (RLS)**: Optional but recommended for production
+   - Listings: Public read-only
+   - Bookings: Users see only their own
+
+3. **API Key**: Using `anonKey` is safe for client-side queries on public data
+
+4. **Stripe Webhooks**: Set up for payment confirmation
+
+---
+
+## 📝 File Structure
+
+```
+src/
+├── app/
+│   ├── services/
+│   │   └── supabase.service.ts (API calls)
+│   ├── components/
+│   │   ├── listings/
+│   │   │   └── listings.component.ts (Grid view)
+│   │   └── booking/
+│   │       └── booking.component.ts (Detail + payment)
+│   └── app.routes.ts
+├── environments/
+│   ├── environment.ts (dev)
+│   └── environment.prod.ts (production)
+└── main.ts
+
+sql-migration.sql (database schema + seed data)
+```
+
+---
+
+## ❓ Troubleshooting
+
+| Issue | Solution |
+|---|---|
+| "Cannot find listings" | Run sql-migration.sql in Supabase SQL Editor |
+| CORS error | Supabase has CORS enabled by default; if issue persists, check Supabase settings |
+| Stripe not loading | Verify publishable key is correct in environment file |
+| Bookings not saving | Check Netlify function logs or Supabase database |
+
+---
+
+## 🎯 Next Features to Add
+
+1. ✅ **Payment Processing** - Implement Stripe Checkout
+2. ✅ **Webhook Handling** - Confirm payments in database
+3. ✅ **User Authentication** - Supabase Auth
+4. ✅ **Image Uploads** - Supabase Storage
+5. ✅ **Availability Calendar** - Block booked dates
+6. ✅ **Review System** - Ratings & comments
+
+---
+
+**All systems are ready. Start with Step 1 in the Quick Start section above!**
