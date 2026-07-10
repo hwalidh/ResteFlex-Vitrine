@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build && npm run seed"
+  command = "npm run build"
   functions = "netlify/functions"
   publish = "dist/resteflex-vitrine"
 

@@ -9,8 +9,7 @@
     "build": "ng build",
     "dev": "ng serve",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "seed": "node scripts/seed.mjs"
+    "test": "ng test"
   },
   "dependencies": {
     "@angular/animations": "^19.2.0",
