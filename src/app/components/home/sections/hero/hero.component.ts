@@ -17,11 +17,14 @@ export class HeroComponent {
       return;
     }
 
-    // Calcule la hauteur du header fixe dynamiquement
-    const header = document.querySelector('app-header') as HTMLElement | null;
-    const headerHeight = header ? header.offsetHeight : 100;
+    // Mesure le header fixe complet (topbar + scrollspy si visible)
+    const fixedHeader = document.querySelector('app-header .fixed') as HTMLElement | null;
+    const headerHeight = fixedHeader ? fixedHeader.offsetHeight : 120;
 
-    const top = nextSection.getBoundingClientRect().top + window.scrollY - headerHeight;
+    // Marge supplémentaire pour ne pas coller le titre au header
+    const extraPadding = 16;
+
+    const top = nextSection.getBoundingClientRect().top + window.scrollY - headerHeight - extraPadding;
     window.scrollTo({ top, behavior: 'smooth' });
   }
 }
