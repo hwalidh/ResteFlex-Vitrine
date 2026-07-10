@@ -1,4 +1,4 @@
-import { Component, HostListener } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -12,10 +12,16 @@ import { RouterModule } from '@angular/router';
 export class HeroComponent {
   scrollDown() {
     const nextSection = document.getElementById('presentation');
-    if (nextSection) {
-      nextSection.scrollIntoView({ behavior: 'smooth' });
-    } else {
+    if (!nextSection) {
       window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
+      return;
     }
+
+    // Calcule la hauteur du header fixe dynamiquement
+    const header = document.querySelector('app-header') as HTMLElement | null;
+    const headerHeight = header ? header.offsetHeight : 100;
+
+    const top = nextSection.getBoundingClientRect().top + window.scrollY - headerHeight;
+    window.scrollTo({ top, behavior: 'smooth' });
   }
 }

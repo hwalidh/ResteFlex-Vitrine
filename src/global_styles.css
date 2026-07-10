@@ -2,6 +2,11 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
+html {
+  /* Compense le header fixe (~80px) + scrollspy (~40px) pour tous les ancres */
+  scroll-padding-top: 120px;
+}
+
 body {
   font-family: 'Inter', sans-serif;
   @apply bg-gray-50;
