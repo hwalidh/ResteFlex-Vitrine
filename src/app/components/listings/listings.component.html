@@ -1,0 +1,130 @@
+<div class="listings-container">
+  <!-- Filter Section -->
+  <div class="filter-panel">
+    <h2>Find Your Perfect Stay</h2>
+    
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>Location</label>
+        <input 
+          type="text" 
+          [(ngModel)]="filterCriteria.location" 
+          placeholder="Enter location"
+          (change)="applyFilters()"
+        />
+      </div>
+
+      <div class="filter-group">
+        <label>Price Range</label>
+        <div class="price-inputs">
+          <input 
+            type="number" 
+            [(ngModel)]="filterCriteria.minPrice" 
+            placeholder="Min"
+            (change)="applyFilters()"
+          />
+          <span>-</span>
+          <input 
+            type="number" 
+            [(ngModel)]="filterCriteria.maxPrice" 
+            placeholder="Max"
+            (change)="applyFilters()"
+          />
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label>Bedrooms</label>
+        <select [(ngModel)]="filterCriteria.minBedrooms" (change)="applyFilters()">
+          <option value="1">1+</option>
+          <option value="2">2+</option>
+          <option value="3">3+</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Guests</label>
+        <select [(ngModel)]="filterCriteria.minGuests" (change)="applyFilters()">
+          <option value="1">1</option>
+          <option value="2">2+</option>
+          <option value="4">4+</option>
+          <option value="6">6+</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading">
+    <p>Loading listings...</p>
+  </div>
+
+  <!-- Listings Grid -->
+  <div *ngIf="!isLoading && filteredListings.length > 0" class="listings-grid">
+    <div *ngFor="let listing of filteredListings" class="listing-card" (click)="selectListing(listing)">
+      <div class="listing-image">
+        <img [src]="listing.images[0]" [alt]="listing.title" />
+        <div class="listing-price">${{ listing.pricePerNight }}/night</div>
+      </div>
+
+      <div class="listing-content">
+        <h3>{{ listing.title }}</h3>
+        <p class="location">📍 {{ listing.location }}</p>
+        
+        <div class="listing-meta">
+          <span>🛏️ {{ listing.bedrooms }} bed{{ listing.bedrooms > 1 ? 's' : '' }}</span>
+          <span>🚿 {{ listing.bathrooms }} bath</span>
+          <span>👥 {{ listing.guests }} guests</span>
+        </div>
+
+        <div class="listing-rating">
+          <span class="stars">⭐ {{ listing.rating }}</span>
+          <span class="reviews">({{ listing.reviews }} reviews)</span>
+        </div>
+
+        <button class="view-btn">View Details</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Results -->
+  <div *ngIf="!isLoading && filteredListings.length === 0" class="no-results">
+    <p>No listings found matching your criteria. Try adjusting your filters.</p>
+  </div>
+
+  <!-- Detail Modal -->
+  <div *ngIf="selectedListing" class="modal-overlay" (click)="closeDetailView()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <button class="close-btn" (click)="closeDetailView()">✕</button>
+
+      <div class="detail-header">
+        <div class="carousel">
+          <img [src]="selectedListing.images[0]" [alt]="selectedListing.title" />
+        </div>
+        <div class="detail-info">
+          <h1>{{ selectedListing.title }}</h1>
+          <p class="description">{{ selectedListing.description }}</p>
+          
+          <div class="amenities">
+            <h4>Amenities</h4>
+            <div class="amenities-grid">
+              <span *ngFor="let amenity of selectedListing.amenities" class="amenity">
+                ✓ {{ amenity }}
+              </span>
+            </div>
+          </div>
+
+          <div class="booking-section">
+            <div class="price-summary">
+              <p class="price">${{ selectedListing.pricePerNight }} per night</p>
+              <p class="rating">⭐ {{ selectedListing.rating }} • {{ selectedListing.reviews }} reviews</p>
+            </div>
+            <button class="book-btn" (click)="goToBooking(selectedListing)">
+              Proceed to Booking & Payment
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

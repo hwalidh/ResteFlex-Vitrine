@@ -1,0 +1,217 @@
+<div class="booking-container">
+  <div class="booking-header">
+    <button class="back-btn" (click)="goBackToListings()">← Back to Listings</button>
+    <h1>Complete Your Booking</h1>
+  </div>
+
+  <!-- Step 1: Booking Details -->
+  <div *ngIf="paymentStep === 1" class="booking-form-section">
+    <form [formGroup]="bookingForm" class="booking-grid">
+      <div class="form-column">
+        <h2>Your Details</h2>
+        
+        <div class="form-group">
+          <label>First Name *</label>
+          <input 
+            type="text" 
+            formControlName="firstName" 
+            placeholder="John"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Last Name *</label>
+          <input 
+            type="text" 
+            formControlName="lastName" 
+            placeholder="Doe"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Email *</label>
+          <input 
+            type="email" 
+            formControlName="email" 
+            placeholder="john@example.com"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Phone *</label>
+          <input 
+            type="tel" 
+            formControlName="phone" 
+            placeholder="+1 (555) 123-4567"
+          />
+        </div>
+
+        <h2 style="margin-top: 2rem;">Stay Details</h2>
+
+        <div class="form-group">
+          <label>Check-in Date *</label>
+          <input 
+            type="date" 
+            formControlName="checkInDate"
+            [min]="listing?.availability?.startDate"
+            [max]="listing?.availability?.endDate"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Check-out Date *</label>
+          <input 
+            type="date" 
+            formControlName="checkOutDate"
+            [min]="listing?.availability?.startDate"
+            [max]="listing?.availability?.endDate"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Number of Guests *</label>
+          <input 
+            type="number" 
+            formControlName="numberOfGuests"
+            [min]="1"
+            [max]="listing?.guests || 10"
+          />
+        </div>
+      </div>
+
+      <!-- Booking Summary Card -->
+      <div class="summary-column">
+        <div class="summary-card" *ngIf="listing">
+          <img [src]="listing.images[0]" [alt]="listing.title" class="summary-image" />
+          
+          <div class="summary-content">
+            <h3>{{ listing.title }}</h3>
+            <p class="location">📍 {{ listing.location }}</p>
+
+            <div class="summary-details">
+              <div class="detail-row">
+                <span>Check-in:</span>
+                <strong>{{ bookingForm.get('checkInDate')?.value || 'Select date' }}</strong>
+              </div>
+              <div class="detail-row">
+                <span>Check-out:</span>
+                <strong>{{ bookingForm.get('checkOutDate')?.value || 'Select date' }}</strong>
+              </div>
+              <div class="detail-row">
+                <span>Guests:</span>
+                <strong>{{ bookingForm.get('numberOfGuests')?.value || 0 }}</strong>
+              </div>
+              <div class="detail-row">
+                <span>Price per night:</span>
+                <strong>${{ listing.pricePerNight }}</strong>
+              </div>
+            </div>
+
+            <div class="price-calculation" *ngIf="calculatePrice() > 0">
+              <div class="calc-row">
+                <span>Subtotal:</span>
+                <span>${{ calculatePrice() }}</span>
+              </div>
+              <div class="calc-row total">
+                <span>Total:</span>
+                <span>${{ calculatePrice() }}</span>
+              </div>
+            </div>
+
+            <button 
+              type="button"
+              class="payment-btn"
+              (click)="goToPayment()"
+              [disabled]="bookingForm.invalid || calculatePrice() === 0"
+            >
+              Proceed to Payment
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Step 2: Payment -->
+  <div *ngIf="paymentStep === 2 && bookingSummary" class="payment-section">
+    <div class="payment-grid">
+      <div class="payment-form-column">
+        <h2>Payment Details</h2>
+        
+        <div class="guest-review">
+          <h3>Guest Information</h3>
+          <p><strong>Name:</strong> {{ bookingSummary.firstName }} {{ bookingSummary.lastName }}</p>
+          <p><strong>Email:</strong> {{ bookingSummary.email }}</p>
+          <p><strong>Phone:</strong> {{ bookingSummary.phone }}</p>
+        </div>
+
+        <div class="stripe-element-placeholder">
+          <p>🔒 Secure Card Payment via Stripe</p>
+          <p style="font-size: 0.9rem; color: #666;">Card details will be processed securely.</p>
+          <!-- Stripe Elements will be mounted here -->
+        </div>
+
+        <div class="payment-actions">
+          <button 
+            class="back-btn-secondary" 
+            (click)="goBackToDetails()"
+            [disabled]="isProcessing"
+          >
+            Back to Details
+          </button>
+          <button 
+            class="confirm-btn"
+            (click)="processPayment()"
+            [disabled]="isProcessing"
+          >
+            <span *ngIf="!isProcessing">Complete Booking - ${{ bookingSummary.totalPrice }}</span>
+            <span *ngIf="isProcessing">Processing...</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Final Summary -->
+      <div class="final-summary-column">
+        <div class="final-summary-card">
+          <h3>Booking Summary</h3>
+          
+          <img [src]="bookingSummary.listing.images[0]" [alt]="bookingSummary.listing.title" />
+          
+          <div class="final-details">
+            <p><strong>{{ bookingSummary.listing.title }}</strong></p>
+            <p class="location">📍 {{ bookingSummary.listing.location }}</p>
+
+            <div class="summary-rows">
+              <div class="row">
+                <span>Check-in:</span>
+                <strong>{{ bookingSummary.checkInDate }}</strong>
+              </div>
+              <div class="row">
+                <span>Check-out:</span>
+                <strong>{{ bookingSummary.checkOutDate }}</strong>
+              </div>
+              <div class="row">
+                <span>Nights:</span>
+                <strong>{{ bookingSummary.nights }}</strong>
+              </div>
+              <div class="row">
+                <span>Guests:</span>
+                <strong>{{ bookingSummary.numberOfGuests }}</strong>
+              </div>
+              <hr />
+              <div class="row total-row">
+                <span>Total Cost:</span>
+                <strong>${{ bookingSummary.totalPrice }}</strong>
+              </div>
+            </div>
+
+            <div class="trust-badges">
+              <span>✓ Secure Checkout</span>
+              <span>✓ Stripe Verified</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
