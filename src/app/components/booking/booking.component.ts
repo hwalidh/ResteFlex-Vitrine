@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { HttpClientModule } from '@angular/common/http';
 import { AirbnbListing, BookingRequest } from '../../models/listing.model';
 import { ListingService } from '../../services/listing.service';
 import { StripePaymentService } from '../../services/stripe-payment.service';
@@ -10,7 +9,7 @@ import { StripePaymentService } from '../../services/stripe-payment.service';
 @Component({
   selector: 'app-booking',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, HttpClientModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './booking.component.html',
   styleUrls: ['./booking.component.scss'],
   providers: []

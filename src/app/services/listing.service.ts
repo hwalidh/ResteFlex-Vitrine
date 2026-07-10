@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { AirbnbListing } from '../models/listing.model';
 import { AIRBNB_LISTINGS } from '../data/airbnb-listings';
@@ -8,15 +7,12 @@ import { AIRBNB_LISTINGS } from '../data/airbnb-listings';
   providedIn: 'root'
 })
 export class ListingService {
-  private apiUrl = '/api/listings';
-
-  constructor(private http: HttpClient) { }
+  constructor() { }
 
   /**
    * Get all Airbnb listings
    */
   getAllListings(): Observable<AirbnbListing[]> {
-    // Return mock data for now - replace with HTTP call when backend is ready
     return of(AIRBNB_LISTINGS);
   }
 
