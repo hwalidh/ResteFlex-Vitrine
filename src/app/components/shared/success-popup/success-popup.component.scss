@@ -1,70 +1,243 @@
-// ── Éléments flottants ────────────────────────────────────────────────────────
-@keyframes float-up {
-  0%   { transform: translateY(100vh) rotate(0deg);   opacity: 0; }
-  10%  { opacity: 1; }
-  90%  { opacity: 1; }
-  100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+// Variables
+$travel-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+$business-gradient: linear-gradient(135deg, #7f69fa 0%, #8e37d7 100%);
+
+// Animations de base
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(5deg); }
 }
 
-.floating-item {
-  position: absolute;
-  bottom: -5%;
-  animation: float-up 5s ease-in-out infinite;
+@keyframes bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+@keyframes fallAndRotate {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% { opacity: 1; }
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+// Animations Travel Pack
+@keyframes planeFloat {
+  0% { transform: translateY(-100vh) translateX(-100vw) rotate(45deg); }
+  100% { transform: translateY(100vh) translateX(100vw) rotate(45deg); }
+}
+
+@keyframes palmSway {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+
+@keyframes globeSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes compassPoint {
+  0%, 100% { transform: rotate(-30deg); }
+  50% { transform: rotate(30deg); }
+}
+
+// Animations Business Pack
+@keyframes moneyRain {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% { opacity: 1; }
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes chartGrow {
+  0% { transform: scaleY(0); }
+  100% { transform: scaleY(1); }
+}
+
+// Conteneurs d'animation
+.travel-container, .business-container {
+  position: fixed;
+  inset: 0;
   pointer-events: none;
-  user-select: none;
+  overflow: hidden;
 }
 
-// ── Icône succès ─────────────────────────────────────────────────────────────
-@keyframes check-pop {
-  0%   { transform: scale(0) rotate(-30deg); opacity: 0; }
-  60%  { transform: scale(1.2) rotate(5deg); }
-  100% { transform: scale(1) rotate(0deg);   opacity: 1; }
-}
-
-@keyframes emoji-bounce {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50%       { transform: translateY(-8px) scale(1.15); }
-}
-
-.success-icon-wrap {
-  position: relative;
-  width: 80px;
-  height: 80px;
-}
-
-.check-circle {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: check-pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s both;
-}
-
-.pack-emoji {
+// Éléments Travel Pack
+.travel-item {
   position: absolute;
-  bottom: -8px;
-  right: -8px;
-  font-size: 1.75rem;
-  animation: emoji-bounce 2s ease-in-out infinite;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+  font-size: 2rem;
+  
+  &.plane {
+    animation: planeFloat 6s linear infinite;
+    font-size: 3rem;
+  }
+  
+  &.palm {
+    animation: fallAndRotate 4s linear infinite;
+    font-size: 2.5rem;
+  }
+  
+  &.beach {
+    animation: fallAndRotate 5s linear infinite;
+  }
 }
 
-// ── Responsive : feuille mobile (slide depuis le bas) ─────────────────────────
+.floating-globe {
+  position: fixed;
+  bottom: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  pointer-events: none;
+  
+  .globe {
+    font-size: 4rem;
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  .compass {
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    font-size: 2rem;
+    animation: compassPoint 2s ease-in-out infinite;
+  }
+}
+
+// Éléments Business Pack
+.money-item {
+  position: absolute;
+  font-size: 2rem;
+  
+  &.bill {
+    animation: moneyRain 4s linear infinite;
+  }
+  
+  &.bag {
+    animation: moneyRain 5s linear infinite;
+    font-size: 2.5rem;
+  }
+}
+
+.floating-chart {
+  position: fixed;
+  bottom: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  pointer-events: none;
+  
+  .chart-icon {
+    font-size: 4rem;
+    animation: float 2s ease-in-out infinite;
+  }
+  
+  .stats {
+    position: absolute;
+    top: -30px;
+    right: -20px;
+    font-size: 2.5rem;
+    animation: chartGrow 1s ease-out infinite;
+    transform-origin: bottom;
+  }
+}
+
+// Popup Content
+.popup-content {
+  @apply bg-white rounded-2xl p-8 max-w-md w-full mx-4 relative;
+  animation: popupAppear 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  
+  &.travel {
+    border-top: 4px solid #4facfe;
+  }
+  
+  &.business {
+    border-top: 4px solid #7f69fa;
+  }
+}
+
+.close-button {
+  @apply absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors;
+}
+
+.success-icon {
+  @apply w-16 h-16 mx-auto mb-4;
+  
+  svg {
+    @apply text-green-500;
+    animation: success 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+}
+
+.title {
+  @apply text-2xl font-bold text-gray-800 mb-2;
+}
+
+.message {
+  @apply text-gray-600;
+}
+
+// Positionnement aléatoire des éléments
+@for $i from 1 through 12 {
+  .travel-item:nth-child(#{$i}),
+  .money-item:nth-child(#{$i}) {
+    left: #{random(100)}vw;
+  }
+}
+
+// Animation d'apparition du popup
+@keyframes popupAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// Animation de la coche de succès
+@keyframes success {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// Media queries pour la responsivité
 @media (max-width: 640px) {
-  .popup-card {
-    border-bottom-left-radius:  0 !important;
-    border-bottom-right-radius: 0 !important;
-    // Poignée de swipe visuelle
-    &::before {
-      content: '';
-      display: block;
-      width: 40px;
-      height: 4px;
-      border-radius: 2px;
-      background: #e5e7eb;
-      margin: 12px auto -4px;
-    }
+  .travel-item, .money-item {
+    font-size: 1.5rem;
+  }
+  
+  .floating-globe .globe,
+  .floating-chart .chart-icon {
+    font-size: 3rem;
+  }
+  
+  .popup-content {
+    margin: 1rem;
+    padding: 1.5rem;
   }
 }

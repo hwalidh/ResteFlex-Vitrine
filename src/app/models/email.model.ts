@@ -2,7 +2,6 @@ export interface EmailTemplateParams {
   to_name: string;
   from_name: string;
   from_email: string;
-  from_phone?: string;
   pack_type: string;
   message: string;
   [key: string]: any;

@@ -1,366 +1,310 @@
-<div class="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-20 pb-16 px-4">
-  <div class="container mx-auto max-w-2xl">
-
-    <!-- Badge pack sélectionné (affiché dès l'étape 2) -->
-    <div *ngIf="selectedPack && currentStep > 0"
-         class="mb-6 rounded-2xl bg-violet-50 border border-violet-100 p-4 flex items-center gap-4">
-      <div class="w-12 h-12 bg-violet-100 rounded-full flex items-center justify-center text-2xl shrink-0">
-        {{ selectedPack === 'travel' ? '🏖️' : selectedPack === 'business' ? '💼' : '🏡' }}
-      </div>
-      <div>
-        <p class="font-bold text-violet-900 text-sm">
-          {{ selectedPack === 'travel' ? 'Travel Pack' : selectedPack === 'business' ? 'Business Pack' : 'Serenity Pack' }}
-        </p>
-        <p class="text-xs text-violet-500">
-          {{ selectedPack === 'travel' ? 'Pour les nomades digitaux' : selectedPack === 'business' ? 'Pour les investisseurs' : 'Loyer garanti' }}
-        </p>
-      </div>
-      <!-- Étape courante (mobile) -->
-      <span class="ml-auto text-xs text-violet-400 font-medium shrink-0">
-        Étape {{ currentStep + 1 }}/{{ steps.length }}
-      </span>
-    </div>
-
-    <!-- ── Barre de progression ─────────────────────────────────────────── -->
-    <div class="mb-12 mt-2">
-      <!-- Barre -->
-      <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-        <div class="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full transition-all duration-500 ease-out"
-             [style.width]="(currentStep / (steps.length - 1)) * 100 + '%'">
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-32 pb-24">
+  <div class="container mx-auto px-4">
+    <!-- Selected Pack Info -->
+    <div *ngIf="selectedPack && currentStep > 0" class="max-w-3xl mx-auto mb-8">
+      <div class="bg-violet-50 rounded-xl p-4 flex items-center space-x-4">
+        <div class="w-12 h-12 bg-violet-100 rounded-full flex items-center justify-center text-2xl">
+          {{ isTravelPack ? '🏖️' : '💼' }}
         </div>
-      </div>
-
-      <!-- Étapes -->
-      <div class="flex justify-between mt-3">
-        <div *ngFor="let step of steps; let i = index"
-             class="flex flex-col items-center gap-1 flex-1">
-          <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all duration-300 mx-auto"
-               [class.bg-gradient-to-br]="currentStep >= i"
-               [class.from-violet-500]="currentStep >= i"
-               [class.to-fuchsia-500]="currentStep >= i"
-               [class.text-white]="currentStep >= i"
-               [class.bg-gray-100]="currentStep < i"
-               [class.text-gray-300]="currentStep < i">
-            {{ step.emoji }}
-          </div>
-          <span class="text-xs font-medium hidden sm:block transition-colors duration-300"
-                [class.text-violet-600]="currentStep >= i"
-                [class.text-gray-300]="currentStep < i">
-            {{ step.name }}
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── Formulaire ────────────────────────────────────────────────────── -->
-    <form [formGroup]="contactForm" (ngSubmit)="onSubmit()">
-
-      <!-- ── Étape 1 : Choix du pack ──────────────────────────────────── -->
-      <div *ngIf="currentStep === 0" [@stepAnim] class="space-y-4">
-        <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">
-          Choisis ton pack ! 🎯
-        </h2>
-
-        <!-- Cartes packs — 1 colonne mobile, 2 sur desktop -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div *ngFor="let pkg of packages"
-               (click)="selectPack(pkg.id)"
-               class="pack-card"
-               [class.pack-card--selected]="selectedPack === pkg.id">
-            <div class="text-3xl mb-3">{{ pkg.emoji }}</div>
-            <h3 class="font-bold text-gray-800 text-lg mb-1">{{ pkg.name }}</h3>
-            <p class="text-gray-500 text-sm leading-relaxed">{{ pkg.description }}</p>
-            <!-- Coche de sélection -->
-            <div *ngIf="selectedPack === pkg.id"
-                 class="absolute top-3 right-3 w-6 h-6 bg-violet-500 rounded-full flex items-center justify-center">
-              <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex justify-end pt-6">
-          <button type="button"
-                  (click)="nextStep()"
-                  [disabled]="!selectedPack"
-                  class="btn-primary">
-            Let's go ! 👉
-          </button>
-        </div>
-      </div>
-
-      <!-- ── Étape 2 : Informations de contact ─────────────────────────── -->
-      <div *ngIf="currentStep === 1" [@stepAnim] class="space-y-5">
-        <div class="text-center mb-6">
-          <h2 class="text-2xl sm:text-3xl font-bold">Hey ! 👋</h2>
-          <p class="text-gray-500 mt-1 text-sm sm:text-base">Comment peut-on te contacter ? Pas de spam, promis !</p>
-        </div>
-
-        <!-- Nom -->
-        <div class="field-wrap">
-          <span class="field-icon">👤</span>
-          <input type="text"
-                 formControlName="name"
-                 placeholder="Ton prénom et nom"
-                 class="field-input"
-                 [class.field-input--error]="isInvalid('name')">
-          <p *ngIf="isInvalid('name')" class="field-error">On aimerait connaître ton nom 😊</p>
-        </div>
-
-        <!-- Email -->
-        <div class="field-wrap">
-          <span class="field-icon">📧</span>
-          <input type="email"
-                 formControlName="email"
-                 placeholder="Ton adresse email"
-                 class="field-input"
-                 [class.field-input--error]="isInvalid('email')">
-          <p *ngIf="isInvalid('email')" class="field-error">Cet email ne semble pas valide 🤔</p>
-        </div>
-
-        <!-- Téléphone -->
-        <div class="field-wrap">
-          <span class="field-icon">📱</span>
-          <input type="tel"
-                 formControlName="phone"
-                 placeholder="Ton numéro de téléphone"
-                 class="field-input"
-                 autocomplete="tel"
-                 inputmode="tel"
-                 [class.field-input--error]="isInvalid('phone')">
-          <p *ngIf="isInvalid('phone')" class="field-error">Numéro invalide (ex: +33 6 12 34 56 78) 📞</p>
-        </div>
-
-        <div class="flex flex-col-reverse sm:flex-row gap-3 pt-6">
-          <button type="button" (click)="previousStep()" class="btn-secondary">
-            👈 Retour
-          </button>
-          <button type="button"
-                  (click)="nextStep()"
-                  [disabled]="!step2Valid"
-                  class="btn-primary sm:ml-auto">
-            On continue ! 👉
-          </button>
-        </div>
-      </div>
-
-      <!-- ── Étape 3 : Détails spécifiques au pack ─────────────────────── -->
-      <div *ngIf="currentStep === 2" [@stepAnim] class="space-y-5">
-
-        <!-- Travel Pack ------------------------------------------------- -->
-        <ng-container *ngIf="selectedPack === 'travel'">
-          <div class="text-center mb-6">
-            <h2 class="text-2xl sm:text-3xl font-bold">Ton petit nid ! 🏠</h2>
-            <p class="text-gray-500 mt-1 text-sm sm:text-base">Plus on en sait, mieux on peut le rentabiliser !</p>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="field-wrap">
-              <span class="field-icon">🏠</span>
-              <select formControlName="propertyType" class="field-input field-select">
-                <option value="">Type de bien</option>
-                <option *ngFor="let t of propertyTypes" [value]="t.id">{{ t.name }}</option>
-              </select>
-            </div>
-
-            <div class="field-wrap">
-              <span class="field-icon">✨</span>
-              <select formControlName="propertyStyle" class="field-input field-select">
-                <option value="">Style du bien</option>
-                <option *ngFor="let s of propertyStyles" [value]="s.id">{{ s.name }}</option>
-              </select>
-            </div>
-
-            <div class="field-wrap">
-              <span class="field-icon">📏</span>
-              <input type="text" formControlName="surface"
-                     placeholder="Surface en m² (approximatif OK)"
-                     class="field-input">
-            </div>
-
-            <div class="field-wrap">
-              <span class="field-icon">📍</span>
-              <input type="text" formControlName="location"
-                     placeholder="Ville / quartier"
-                     class="field-input">
-            </div>
-
-            <div class="field-wrap">
-              <span class="field-icon">📅</span>
-              <input type="date" formControlName="availabilityStart" class="field-input field-date">
-              <label class="field-date-label">Disponible à partir du</label>
-            </div>
-
-            <div class="field-wrap">
-              <span class="field-icon">📅</span>
-              <input type="date" formControlName="availabilityEnd" class="field-input field-date">
-              <label class="field-date-label">Jusqu'au</label>
-            </div>
-          </div>
-        </ng-container>
-
-        <!-- Business Pack ----------------------------------------------- -->
-        <ng-container *ngIf="selectedPack === 'business'">
-          <div class="text-center mb-6">
-            <h2 class="text-2xl sm:text-3xl font-bold">Parlons business ! 💼</h2>
-            <p class="text-gray-500 mt-1 text-sm sm:text-base">On va booster tes revenus ensemble !</p>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="field-wrap">
-              <span class="field-icon">🏢</span>
-              <input type="number" formControlName="propertyCount"
-                     placeholder="Nombre de biens à gérer"
-                     class="field-input" min="1">
-            </div>
-
-            <div class="field-wrap">
-              <span class="field-icon">💰</span>
-              <select formControlName="investmentType" class="field-input field-select">
-                <option value="">Type de projet</option>
-                <option value="existing">Déjà en location — on optimise !</option>
-                <option value="new">Nouveau projet — on démarre !</option>
-                <option value="mix">Un peu des deux — on gère !</option>
-              </select>
-            </div>
-
-            <div class="field-wrap sm:col-span-2">
-              <span class="field-icon">📈</span>
-              <input type="text" formControlName="currentRevenue"
-                     placeholder="Revenus actuels (t'inquiète, on va les booster 🚀)"
-                     class="field-input">
-            </div>
-          </div>
-        </ng-container>
-
-        <!-- Serenity Pack ----------------------------------------------- -->
-        <ng-container *ngIf="selectedPack === 'serenity'">
-          <div class="text-center mb-6">
-            <h2 class="text-2xl sm:text-3xl font-bold">Ton bien mérite le meilleur ! 🏡</h2>
-            <p class="text-gray-500 mt-1 text-sm sm:text-base">Dis-nous tout pour garantir le meilleur loyer !</p>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="field-wrap">
-              <span class="field-icon">🏠</span>
-              <select formControlName="propertyType" class="field-input field-select">
-                <option value="">Type de bien</option>
-                <option *ngFor="let t of propertyTypes" [value]="t.id">{{ t.name }}</option>
-              </select>
-            </div>
-
-            <div class="field-wrap">
-              <span class="field-icon">📏</span>
-              <input type="text" formControlName="surface"
-                     placeholder="Surface en m²"
-                     class="field-input">
-            </div>
-
-            <div class="field-wrap">
-              <span class="field-icon">📍</span>
-              <input type="text" formControlName="location"
-                     placeholder="Ville / quartier"
-                     class="field-input">
-            </div>
-
-            <div class="field-wrap">
-              <span class="field-icon">💰</span>
-              <input type="text" formControlName="currentRent"
-                     placeholder="Loyer actuel (€/mois)"
-                     class="field-input">
-            </div>
-
-            <div class="field-wrap sm:col-span-2">
-              <span class="field-icon">💎</span>
-              <input type="text" formControlName="propertyValue"
-                     placeholder="Valeur estimée du bien"
-                     class="field-input">
-            </div>
-          </div>
-        </ng-container>
-
-        <div class="flex flex-col-reverse sm:flex-row gap-3 pt-6">
-          <button type="button" (click)="previousStep()" class="btn-secondary">
-            👈 Retour
-          </button>
-          <button type="button" (click)="nextStep()" class="btn-primary sm:ml-auto">
-            Presque fini ! 👉
-          </button>
-        </div>
-      </div>
-
-      <!-- ── Étape 4 : Message ─────────────────────────────────────────── -->
-      <div *ngIf="currentStep === 3" [@stepAnim] class="space-y-5">
-        <div class="text-center mb-6">
-          <h2 class="text-2xl sm:text-3xl font-bold">
-            {{ selectedPack === 'travel' ? 'Un truc à ajouter ? 💭' : selectedPack === 'business' ? 'Ta vision ? 🎯' : 'Des détails ? 🌟' }}
-          </h2>
-          <p class="text-gray-500 mt-1 text-sm sm:text-base">
-            {{ selectedPack === 'travel' ? 'Détails sur ton bien, tes attentes, tes questions...' : selectedPack === 'business' ? 'Objectifs de revenus, stratégie, contraintes...' : 'Attentes, questions, délais souhaités...' }}
+        <div>
+          <h3 class="font-bold text-violet-900">
+            {{ isTravelPack ? 'Travel Pack' : 'Business Pack' }}
+          </h3>
+          <p class="text-sm text-violet-600">
+            {{ isTravelPack ? 'Pour les nomades digitaux' : 'Pour les investisseurs malins' }}
           </p>
         </div>
+      </div>
+    </div>
 
-        <div class="field-wrap">
-          <textarea formControlName="message"
-                    rows="5"
-                    placeholder="Balance tout ici ! 🗣️"
-                    class="field-input resize-none"
-                    [class.field-input--error]="isInvalid('message')">
-          </textarea>
-          <!-- Compteur -->
-          <div class="flex justify-between items-center mt-2 px-1">
-            <p *ngIf="isInvalid('message')" class="field-error !mt-0">
-              On a besoin d'un peu plus de détails (min. 20 caractères) 😊
-            </p>
-            <span class="ml-auto text-xs"
-                  [class.text-violet-500]="messageLength >= 20"
-                  [class.text-gray-400]="messageLength < 20">
-              {{ messageLength }}/20 min
-              <span *ngIf="remainingChars > 0" class="text-orange-400">
-                (encore {{ remainingChars }} car.)
-              </span>
+    <!-- Progress Bar -->
+    <div class="max-w-3xl mx-auto mb-12">
+      <div class="relative">
+        <!-- Progress bar background -->
+        <div class="h-2 bg-gray-200 rounded-full">
+          <!-- Active progress bar -->
+          <div class="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full transition-all duration-500"
+               [style.width]="(currentStep / (steps.length - 1)) * 100 + '%'">
+          </div>
+        </div>
+        
+        <!-- Percentage indicator -->
+        <div class="absolute -top-12 transition-all duration-500"
+             [style.left]="(currentStep / (steps.length - 1)) * 100 + '%'"
+             [style.transform]="'translateX(-50%)'"
+             [class.opacity-0]="currentStep === 0"
+             [class.opacity-100]="currentStep > 0">
+          <div class="relative">
+            <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+              <div class="w-2 h-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 rotate-45"></div>
+            </div>
+            <div class="bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white px-4 py-2 rounded-lg">
+              {{ (currentStep / (steps.length - 1)) * 100 | number:'1.0-0' }}%
+            </div>
+          </div>
+        </div>
+
+        <!-- Step indicators -->
+        <div class="absolute -bottom-8 w-full flex justify-between">
+          <div *ngFor="let step of steps; let i = index" 
+               class="flex flex-col items-center">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all duration-300"
+                 [class.bg-gradient-to-r]="currentStep >= i"
+                 [class.from-violet-500]="currentStep >= i"
+                 [class.to-fuchsia-500]="currentStep >= i"
+                 [class.bg-gray-200]="currentStep < i"
+                 [class.text-white]="currentStep >= i"
+                 [class.text-gray-400]="currentStep < i">
+              {{ step.emoji }}
+            </div>
+            <span class="text-xs mt-2 font-medium"
+                  [class.text-violet-600]="currentStep >= i"
+                  [class.text-gray-400]="currentStep < i">
+              {{ step.name }}
             </span>
           </div>
         </div>
-
-        <!-- Erreur d'envoi -->
-        <div *ngIf="emailError"
-             class="rounded-xl bg-red-50 border border-red-200 p-4 flex items-center gap-3 text-red-700 text-sm">
-          <span class="text-xl">😬</span>
-          <span>Oups ! L'envoi a échoué. Réessaie ou contacte-nous sur WhatsApp.</span>
-        </div>
-
-        <div class="flex flex-col-reverse sm:flex-row gap-3 pt-6">
-          <button type="button" (click)="previousStep()" class="btn-secondary">
-            👈 Retour
-          </button>
-          <button type="submit"
-                  [disabled]="!contactForm.valid || isSubmitting"
-                  class="btn-primary sm:ml-auto">
-            <ng-container *ngIf="!isSubmitting">C'est parti ! 🚀</ng-container>
-            <ng-container *ngIf="isSubmitting">
-              <span class="flex items-center justify-center gap-2">
-                <svg class="animate-spin w-4 h-4" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10"
-                          stroke="currentColor" stroke-width="4" fill="none"/>
-                  <path class="opacity-75" fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                </svg>
-                Envoi en cours…
-              </span>
-            </ng-container>
-          </button>
-        </div>
       </div>
+    </div>
 
-    </form>
+    <div class="max-w-3xl mx-auto">
+      <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="relative">
+        <!-- Étape 1: Choix du pack -->
+        <div *ngIf="currentStep === 0" class="space-y-6 animate-slide-up">
+          <h2 class="text-2xl font-bold text-center mb-8">
+            Choisis ton pack qui déchire ! 🎯
+          </h2>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <div *ngFor="let type of projectTypes" 
+                 (click)="selectProjectType(type.id)"
+                 [class.selected]="contactForm.get('projectType')?.value === type.id"
+                 class="project-card">
+              <div class="p-6 rounded-2xl bg-white shadow-lg border-2 transition-all duration-300"
+                   [class.border-violet-500]="contactForm.get('projectType')?.value === type.id"
+                   [class.border-transparent]="contactForm.get('projectType')?.value !== type.id">
+                <div class="project-icon text-4xl mb-4">{{type.emoji}}</div>
+                <h3 class="text-xl font-bold mb-2">{{type.name}}</h3>
+                <p class="text-gray-600">{{type.description}}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end mt-8">
+            <button type="button" 
+                    (click)="nextStep()" 
+                    [disabled]="!contactForm.get('projectType')?.value"
+                    class="next-button">
+              Let's go ! 👉
+            </button>
+          </div>
+        </div>
+
+        <!-- Étape 2: Informations de contact -->
+        <div *ngIf="currentStep === 1" class="space-y-6 animate-slide-up">
+          <h2 class="text-2xl font-bold text-center mb-8">
+            Hey ! 👋<br>
+            <span class="text-lg font-normal text-gray-600">Comment peut-on te contacter ? On te promet, pas de spam !</span>
+          </h2>
+
+          <div class="space-y-6">
+            <div class="floating-input">
+              <input type="text" 
+                     formControlName="name" 
+                     class="form-input peer" 
+                     placeholder=" "
+                     [class.error]="isFieldInvalid('name')">
+              <label class="floating-label">Ton petit nom</label>
+              <div class="input-emoji">👤</div>
+              <div *ngIf="isFieldInvalid('name')" class="text-red-500 text-sm mt-1">
+                Hey ! On aimerait connaître ton nom 😊
+              </div>
+            </div>
+
+            <div class="floating-input">
+              <input type="email" 
+                     formControlName="email" 
+                     class="form-input peer" 
+                     placeholder=" "
+                     [class.error]="isFieldInvalid('email')">
+              <label class="floating-label">Ton email (promis on spam pas)</label>
+              <div class="input-emoji">📧</div>
+              <div *ngIf="isFieldInvalid('email')" class="text-red-500 text-sm mt-1">
+                Oups ! On dirait que cet email n'est pas valide 🤔
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-between mt-8">
+            <button type="button" (click)="previousStep()" class="prev-button">
+              👈 Retour
+            </button>
+            <button type="button" 
+                    (click)="nextStep()" 
+                    [disabled]="!contactForm.get('name')?.valid || !contactForm.get('email')?.valid"
+                    class="next-button">
+              On continue ! 👉
+            </button>
+          </div>
+        </div>
+
+        <!-- Étape 3: Détails spécifiques au pack -->
+        <div *ngIf="currentStep === 2" class="space-y-6 animate-slide-up">
+          <!-- Travel Pack -->
+          <div *ngIf="isTravelPack">
+            <h2 class="text-2xl font-bold text-gray-800 text-center mb-8">
+              Parle-nous de ton petit nid ! 🏠<br>
+              <span class="text-lg font-normal text-gray-600">Plus on en sait, mieux on peut t'aider à le rentabiliser !</span>
+            </h2>
+            
+            <div class="grid grid-cols-2 gap-4">
+              <div class="floating-input">
+                <select formControlName="propertyType" class="form-input peer">
+                  <option value="">Sélectionner</option>
+                  <option *ngFor="let type of propertyTypes" [value]="type.id">
+                    {{type.name}}
+                  </option>
+                </select>
+                <label class="floating-label">C'est quoi ton bien ?</label>
+                <div class="input-emoji">🏠</div>
+              </div>
+
+              <div class="floating-input">
+                <select formControlName="propertyStyle" class="form-input peer">
+                  <option value="">Sélectionner</option>
+                  <option *ngFor="let style of propertyStyles" [value]="style.id">
+                    {{style.name}}
+                  </option>
+                </select>
+                <label class="floating-label">Le style de ton bien</label>
+                <div class="input-emoji">✨</div>
+              </div>
+
+              <div class="floating-input">
+                <input type="text" formControlName="surface" class="form-input peer" placeholder=" ">
+                <label class="floating-label">La taille en m² (même à peu près)</label>
+                <div class="input-emoji">📏</div>
+              </div>
+
+              <div class="floating-input">
+                <input type="text" formControlName="location" class="form-input peer" placeholder=" ">
+                <label class="floating-label">Où ça se trouve ?</label>
+                <div class="input-emoji">📍</div>
+              </div>
+
+              <div class="floating-input">
+                <input type="date" formControlName="availabilityStart" class="form-input peer" placeholder=" ">
+                <label class="floating-label">Dispo à partir de quand ?</label>
+                <div class="input-emoji">📅</div>
+              </div>
+
+              <div class="floating-input">
+                <input type="date" formControlName="availabilityEnd" class="form-input peer" placeholder=" ">
+                <label class="floating-label">Jusqu'à quand ?</label>
+                <div class="input-emoji">📅</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Business Pack -->
+          <div *ngIf="isBusinessPack">
+            <h2 class="text-2xl font-bold text-gray-800 text-center mb-8">
+              Parlons business ! 💼<br>
+              <span class="text-lg font-normal text-gray-600">On va booster tes revenus ensemble !</span>
+            </h2>
+            
+            <div class="grid grid-cols-2 gap-4">
+              <div class="floating-input">
+                <input type="number" formControlName="propertyCount" class="form-input peer" placeholder=" ">
+                <label class="floating-label">Combien de biens à gérer ?</label>
+                <div class="input-emoji">🏢</div>
+              </div>
+
+              <div class="floating-input">
+                <select formControlName="investmentType" class="form-input peer">
+                  <option value="">Sélectionner</option>
+                  <option value="existing">Déjà en location (on optimise !)</option>
+                  <option value="new">Nouveau projet (on démarre !)</option>
+                  <option value="mix">Un peu des deux (on gère !)</option>
+                </select>
+                <label class="floating-label">Type de projet</label>
+                <div class="input-emoji">💰</div>
+              </div>
+
+              <div class="floating-input col-span-2">
+                <input type="text" formControlName="currentRevenue" class="form-input peer" placeholder=" ">
+                <label class="floating-label">Revenus actuels (t'inquiète, on va les booster ! 🚀)</label>
+                <div class="input-emoji">📈</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-between mt-8">
+            <button type="button" (click)="previousStep()" class="prev-button">
+              👈 Retour
+            </button>
+            <button type="button" (click)="nextStep()" class="next-button">
+              Presque fini ! 👉
+            </button>
+          </div>
+        </div>
+
+        <!-- Étape 4: Message final -->
+        <div *ngIf="currentStep === 3" class="space-y-6 animate-slide-up">
+          <h2 class="text-2xl font-bold text-gray-800 text-center mb-8">
+            <span *ngIf="isTravelPack">Un dernier truc à ajouter ? 💭<br>
+              <span class="text-lg font-normal text-gray-600">Des détails sur ton bien, tes attentes, tes questions...</span>
+            </span>
+            <span *ngIf="isBusinessPack">Ta vision ? 🎯<br>
+              <span class="text-lg font-normal text-gray-600">Objectifs de revenus, stratégie, contraintes...</span>
+            </span>
+          </h2>
+          
+          <div class="floating-input">
+            <textarea
+              formControlName="message"
+              rows="4"
+              class="form-input peer"
+              placeholder=" "
+              [class.error]="isFieldInvalid('message')"
+            ></textarea>
+            <label class="floating-label">Balance tout ! (minimum 50 caractères)</label>
+            <div class="input-emoji">💭</div>
+            <div class="text-sm mt-2" [class.text-red-500]="isFieldInvalid('message')" [class.text-gray-500]="!isFieldInvalid('message')">
+              {{ messageLength }}/50 caractères
+              <span *ngIf="remainingCharacters > 0">(encore {{ remainingCharacters }} caractères requis)</span>
+            </div>
+            <div *ngIf="isFieldInvalid('message')" class="text-red-500 text-sm mt-1">
+              Hey ! On a besoin d'un peu plus de détails (minimum 50 caractères) 😊
+            </div>
+          </div>
+
+          <div class="flex justify-between mt-8">
+            <button type="button" (click)="previousStep()" class="prev-button">
+              👈 Retour
+            </button>
+            <button type="submit" 
+                    [disabled]="!contactForm.valid || isSubmitting"
+                    class="submit-button">
+              <span *ngIf="!isSubmitting">C'est parti ! 🚀</span>
+              <span *ngIf="isSubmitting" class="flex items-center">
+                <svg class="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                On arrive ! ⚡️
+              </span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
   </div>
 
-  <!-- Popup succès -->
+  <!-- Success Popup -->
   <app-success-popup
     [show]="submitted"
     [packType]="selectedPack"
-    (close)="closePopup()">
-  </app-success-popup>
+    (close)="closePopup()"
+  ></app-success-popup>
 </div>

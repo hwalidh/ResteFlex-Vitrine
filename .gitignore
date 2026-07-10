@@ -47,12 +47,3 @@ yarn-error.log*
 # System Files
 .DS_Store
 Thumbs.db
-# Local Netlify folder
-.netlify
-
-# Angular cache
-/.angular/cache
-.angular/
-
-# Postman generated resources
-.postman/

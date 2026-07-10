@@ -1,201 +1,80 @@
-// ── Variables ────────────────────────────────────────────────────────────────
-$violet: #8b5cf6;
-$fuchsia: #d946ef;
-$gray-light: #f3f4f6;
-$gray-border: #e5e7eb;
+// Variables
+$primary: #8b5cf6;
+$secondary: #d946ef;
 
-// ── Animations ───────────────────────────────────────────────────────────────
-@keyframes pop-in {
-  0% {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-  60% {
-    transform: scale(1.03);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes success-appear {
+  from { opacity: 0; transform: scale(0.9) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes success-check {
+  from { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.2); }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s ease-out forwards;
+}
+
+.animate-success-appear {
+  animation: success-appear 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-success-check {
+  animation: success-check 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.project-card {
+  @apply transition-transform duration-300;
+  
+  &:hover, &.selected {
+    @apply -translate-y-1;
+    .project-icon { @apply scale-110; }
   }
 }
 
-// ── Conteneur principal ────────────────────────────────────────────────────────
-.min-h-screen {
-  @apply pb-16;
-
-  @media (max-width: 640px) {
-    @apply pb-12;
+.floating-input {
+  @apply relative mb-6;
+  
+  .form-input {
+    @apply w-full px-6 py-4 rounded-xl bg-white border-2 border-gray-200 
+           transition-colors duration-300 pr-12 focus:border-violet-500 
+           focus:ring focus:ring-violet-200;
+    
+    &:focus, &:not(:placeholder-shown) {
+      & + .floating-label {
+        @apply text-violet-600 bg-white;
+        transform: translateY(-1.75rem) scale(0.85);
+      }
+    }
   }
-
-  @media (max-width: 380px) {
-    @apply pb-10;
+  
+  .floating-label {
+    @apply absolute left-4 top-4 text-gray-500 px-2 transition-all duration-300 
+           pointer-events-none origin-left;
   }
-}
-
-// ── Cartes pack (étape 1) ─────────────────────────────────────────────────────
-.pack-card {
-  @apply relative bg-white rounded-2xl p-5 border-2 border-transparent
-         shadow-sm cursor-pointer transition-all duration-300
-         hover:-translate-y-1 hover:shadow-md hover:border-violet-200;
-
-  &--selected {
-    @apply border-violet-500 shadow-violet-100 shadow-lg -translate-y-1;
-    background: linear-gradient(135deg, #faf5ff, #fff);
-  }
-
-  &:active {
-    @apply scale-95;
+  
+  .input-emoji {
+    @apply absolute right-4 top-1/2 -translate-y-1/2 text-xl;
   }
 }
 
-// ── Champs de saisie ─────────────────────────────────────────────────────────
-.field-wrap {
-  @apply relative flex flex-col gap-1;
+.next-button, .prev-button, .submit-button {
+  @apply px-8 py-3 rounded-xl font-semibold transition-all duration-300 
+         disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
-.field-icon {
-  @apply absolute left-4 top-1/2 -translate-y-1/2 text-xl pointer-events-none z-10;
+.next-button, .submit-button {
+  background: linear-gradient(to right, $primary, $secondary);
+  @apply text-white hover:-translate-y-0.5 hover:shadow-lg hover:shadow-violet-200;
 }
 
-.field-input {
-  @apply w-full pl-12 pr-4 py-3.5 rounded-xl bg-white border-2 border-gray-200
-         text-gray-800 placeholder-gray-400 text-base
-         transition-all duration-200
-         focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100;
-
-  font-size: 16px;
-
-  &--error {
-    @apply border-red-400 focus:border-red-400 focus:ring-red-100;
-  }
-}
-
-.field-select {
-  @apply appearance-none cursor-pointer;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236b7280'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  background-size: 1.25rem;
-  padding-right: 2.5rem;
-}
-
-// Date input styles
-.field-date {
-  @apply pt-6 pb-2;
-}
-
-.field-date-label {
-  @apply absolute left-12 top-2 text-xs text-violet-500 font-medium pointer-events-none;
-}
-
-.field-error {
-  @apply text-red-500 text-xs mt-1 ml-1;
-}
-
-// Textarea : icône en haut
-.field-wrap:has(textarea) .field-icon {
-  top: 1rem;
-  transform: none;
-}
-
-// ── Boutons de navigation ─────────────────────────────────────────────────────
-.btn-primary,
-.btn-secondary {
-  @apply inline-flex items-center justify-center
-         px-6 py-3.5 rounded-xl
-         font-semibold text-base
-         transition-all duration-300
-         active:scale-95;
-}
-
-.btn-primary {
-  @apply text-white;
-  background: linear-gradient(135deg, $violet, $fuchsia);
-  box-shadow: 0 4px 14px rgba($violet, 0.3);
-
-  &:disabled {
-    @apply opacity-50 cursor-not-allowed;
-  }
-
-  &:not(:disabled):hover {
-    @apply -translate-y-0.5;
-    box-shadow: 0 6px 20px rgba($violet, 0.4);
-  }
-
-  &:not(:disabled):active {
-    @apply scale-95;
-  }
-}
-
-.btn-secondary {
-  @apply text-gray-600 bg-gray-100;
-
-  &:hover {
-    @apply bg-gray-200 -translate-y-0.5;
-  }
-
-  &:active {
-    @apply scale-95;
-  }
-}
-
-// Responsive : buttons sur mobile
-@media (max-width: 640px) {
-  .btn-primary,
-  .btn-secondary {
-    @apply w-full py-3;
-  }
-
-  .flex.flex-col-reverse.sm\:flex-row {
-    @apply gap-2.5;
-  }
-}
-
-// Responsive : petits téléphones
-@media (max-width: 380px) {
-  .field-input {
-    @apply py-3 text-sm;
-    font-size: 16px;
-  }
-
-  .btn-primary,
-  .btn-secondary {
-    @apply py-2.5 text-sm;
-    font-size: 16px;
-  }
-
-  form > div {
-    @apply space-y-3;
-  }
-}
-
-// ── Layout form container ─────────────────────────────────────────────────────
-form {
-  @apply max-w-2xl mx-auto;
-}
-
-// Badge du pack sélectionné
-.rounded-2xl.bg-violet-50 {
-  @apply mb-6;
-
-  @media (max-width: 640px) {
-    @apply mb-4 p-3;
-  }
-
-  @media (max-width: 380px) {
-    @apply mb-3 p-3;
-  }
-}
-
-// Barre de progression
-.h-2.bg-gray-100 {
-  @apply mb-12;
-
-  @media (max-width: 640px) {
-    @apply mb-8;
-  }
-
-  @media (max-width: 380px) {
-    @apply mb-6;
-  }
+.prev-button {
+  @apply text-gray-600 bg-gray-100 hover:bg-gray-200;
 }
