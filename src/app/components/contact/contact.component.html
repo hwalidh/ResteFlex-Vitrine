@@ -80,11 +80,11 @@
           </div>
         </div>
 
-        <div class="flex justify-end pt-4">
+        <div class="flex justify-end pt-6">
           <button type="button"
                   (click)="nextStep()"
                   [disabled]="!selectedPack"
-                  class="btn-primary w-full sm:w-auto">
+                  class="btn-primary">
             Let's go ! 👉
           </button>
         </div>
@@ -132,14 +132,14 @@
           <p *ngIf="isInvalid('phone')" class="field-error">Numéro invalide (ex: +33 6 12 34 56 78) 📞</p>
         </div>
 
-        <div class="flex flex-col-reverse sm:flex-row gap-3 pt-4">
-          <button type="button" (click)="previousStep()" class="btn-secondary w-full sm:w-auto">
+        <div class="flex flex-col-reverse sm:flex-row gap-3 pt-6">
+          <button type="button" (click)="previousStep()" class="btn-secondary">
             👈 Retour
           </button>
           <button type="button"
                   (click)="nextStep()"
                   [disabled]="!step2Valid"
-                  class="btn-primary w-full sm:w-auto sm:ml-auto">
+                  class="btn-primary sm:ml-auto">
             On continue ! 👉
           </button>
         </div>
@@ -280,11 +280,11 @@
           </div>
         </ng-container>
 
-        <div class="flex flex-col-reverse sm:flex-row gap-3 pt-4">
-          <button type="button" (click)="previousStep()" class="btn-secondary w-full sm:w-auto">
+        <div class="flex flex-col-reverse sm:flex-row gap-3 pt-6">
+          <button type="button" (click)="previousStep()" class="btn-secondary">
             👈 Retour
           </button>
-          <button type="button" (click)="nextStep()" class="btn-primary w-full sm:w-auto sm:ml-auto">
+          <button type="button" (click)="nextStep()" class="btn-primary sm:ml-auto">
             Presque fini ! 👉
           </button>
         </div>
@@ -331,13 +331,13 @@
           <span>Oups ! L'envoi a échoué. Réessaie ou contacte-nous sur WhatsApp.</span>
         </div>
 
-        <div class="flex flex-col-reverse sm:flex-row gap-3 pt-4">
-          <button type="button" (click)="previousStep()" class="btn-secondary w-full sm:w-auto">
+        <div class="flex flex-col-reverse sm:flex-row gap-3 pt-6">
+          <button type="button" (click)="previousStep()" class="btn-secondary">
             👈 Retour
           </button>
           <button type="submit"
                   [disabled]="!contactForm.valid || isSubmitting"
-                  class="btn-primary w-full sm:w-auto sm:ml-auto min-w-[160px]">
+                  class="btn-primary sm:ml-auto">
             <ng-container *ngIf="!isSubmitting">C'est parti ! 🚀</ng-container>
             <ng-container *ngIf="isSubmitting">
               <span class="flex items-center justify-center gap-2">

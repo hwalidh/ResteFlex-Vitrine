@@ -6,9 +6,30 @@ $gray-border: #e5e7eb;
 
 // ── Animations ───────────────────────────────────────────────────────────────
 @keyframes pop-in {
-  0%   { transform: scale(0.95); opacity: 0; }
-  60%  { transform: scale(1.03); }
-  100% { transform: scale(1);    opacity: 1; }
+  0% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// ── Conteneur principal ────────────────────────────────────────────────────────
+.min-h-screen {
+  @apply pb-32;
+
+  @media (max-width: 640px) {
+    @apply pb-28;
+  }
+
+  @media (max-width: 380px) {
+    @apply pb-24;
+  }
 }
 
 // ── Cartes pack (étape 1) ─────────────────────────────────────────────────────
@@ -17,14 +38,14 @@ $gray-border: #e5e7eb;
          shadow-sm cursor-pointer transition-all duration-300
          hover:-translate-y-1 hover:shadow-md hover:border-violet-200;
 
-  // Sélectionné
   &--selected {
     @apply border-violet-500 shadow-violet-100 shadow-lg -translate-y-1;
     background: linear-gradient(135deg, #faf5ff, #fff);
   }
 
-  // Tap feedback mobile
-  &:active { @apply scale-95; }
+  &:active {
+    @apply scale-95;
+  }
 }
 
 // ── Champs de saisie ─────────────────────────────────────────────────────────
@@ -34,8 +55,6 @@ $gray-border: #e5e7eb;
 
 .field-icon {
   @apply absolute left-4 top-1/2 -translate-y-1/2 text-xl pointer-events-none z-10;
-  // Pour les textarea, centrer différemment
-  .resize-none + & { top: 1.2rem; transform: none; }
 }
 
 .field-input {
@@ -44,7 +63,6 @@ $gray-border: #e5e7eb;
          transition-all duration-200
          focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100;
 
-  // Mobile : pas de zoom sur focus (font-size >= 16px)
   font-size: 16px;
 
   &--error {
@@ -61,7 +79,7 @@ $gray-border: #e5e7eb;
   padding-right: 2.5rem;
 }
 
-// Date input : affiche un label au-dessus sur mobile
+// Date input styles
 .field-date {
   @apply pt-6 pb-2;
 }
@@ -80,14 +98,24 @@ $gray-border: #e5e7eb;
   transform: none;
 }
 
-// ── Boutons ───────────────────────────────────────────────────────────────────
-.btn-primary {
-  @apply inline-flex items-center justify-center px-6 py-3.5 rounded-xl
-         font-semibold text-white text-base
+// ── Boutons de navigation ─────────────────────────────────────────────────────
+.btn-primary,
+.btn-secondary {
+  @apply inline-flex items-center justify-center
+         px-6 py-3.5 rounded-xl
+         font-semibold text-base
          transition-all duration-300
-         disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none;
+         active:scale-95;
+}
+
+.btn-primary {
+  @apply text-white;
   background: linear-gradient(135deg, $violet, $fuchsia);
   box-shadow: 0 4px 14px rgba($violet, 0.3);
+
+  &:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
 
   &:not(:disabled):hover {
     @apply -translate-y-0.5;
@@ -100,14 +128,74 @@ $gray-border: #e5e7eb;
 }
 
 .btn-secondary {
-  @apply inline-flex items-center justify-center px-6 py-3.5 rounded-xl
-         font-semibold text-gray-600 bg-gray-100 text-base
-         transition-all duration-200
-         hover:bg-gray-200 active:scale-95;
+  @apply text-gray-600 bg-gray-100;
+
+  &:hover {
+    @apply bg-gray-200 -translate-y-0.5;
+  }
+
+  &:active {
+    @apply scale-95;
+  }
 }
 
-// ── Responsive : petits téléphones ────────────────────────────────────────────
+// Responsive : buttons sur mobile
+@media (max-width: 640px) {
+  .btn-primary,
+  .btn-secondary {
+    @apply w-full py-3;
+  }
+
+  .flex.flex-col-reverse.sm\:flex-row {
+    @apply gap-2.5;
+  }
+}
+
+// Responsive : petits téléphones
 @media (max-width: 380px) {
-  .field-input { @apply py-3 text-sm; font-size: 16px; }
-  .btn-primary, .btn-secondary { @apply py-3 text-sm; }
+  .field-input {
+    @apply py-3 text-sm;
+    font-size: 16px;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    @apply py-2.5 text-sm;
+    font-size: 16px;
+  }
+
+  form > div {
+    @apply space-y-3;
+  }
+}
+
+// ── Layout form container ─────────────────────────────────────────────────────
+form {
+  @apply max-w-2xl mx-auto;
+}
+
+// Badge du pack sélectionné
+.rounded-2xl.bg-violet-50 {
+  @apply mb-6;
+
+  @media (max-width: 640px) {
+    @apply mb-4 p-3;
+  }
+
+  @media (max-width: 380px) {
+    @apply mb-3 p-3;
+  }
+}
+
+// Barre de progression
+.h-2.bg-gray-100 {
+  @apply mb-12;
+
+  @media (max-width: 640px) {
+    @apply mb-8;
+  }
+
+  @media (max-width: 380px) {
+    @apply mb-6;
+  }
 }
