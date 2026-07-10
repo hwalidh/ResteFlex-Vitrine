@@ -21,14 +21,14 @@ $gray-border: #e5e7eb;
 
 // ── Conteneur principal ────────────────────────────────────────────────────────
 .min-h-screen {
-  @apply pb-32;
+  @apply pb-16;
 
   @media (max-width: 640px) {
-    @apply pb-28;
+    @apply pb-12;
   }
 
   @media (max-width: 380px) {
-    @apply pb-24;
+    @apply pb-10;
   }
 }
 
