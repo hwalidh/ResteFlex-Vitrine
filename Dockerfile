@@ -12,13 +12,10 @@ RUN npm run build
 # Production stage — nginx
 FROM nginx:alpine
 
-# Config nginx personnalisée
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/dist/resteflex-vitrine /usr/share/nginx/html
 
-# Copie du build Angular
-COPY --from=builder /app/dist/demo /usr/share/nginx/html
-
-EXPOSE 4200
+EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost:4200/ || exit 1
+  CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1

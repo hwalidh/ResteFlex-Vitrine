@@ -1,7 +1,7 @@
 [build]
   command = "npm run build && npm run seed"
   functions = "netlify/functions"
-  publish = "dist/demo"
+  publish = "dist/resteflex-vitrine"
 
 [build.environment]
   NODE_VERSION = "22"

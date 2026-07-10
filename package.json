@@ -1,5 +1,7 @@
 {
-  "name": "resteflex-concierge",
+  "name": "resteflex-vitrine",
+  "version": "1.0.0",
+  "description": "ResteFlex Conciergerie - Site Vitrine",
   "private": true,
   "scripts": {
     "ng": "ng",
