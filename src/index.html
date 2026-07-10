@@ -1,103 +1,92 @@
 <!DOCTYPE html>
 <html lang="fr">
-  <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
-  <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
-
   <head>
-    <title>ResteFlex Conciergerie | Gestion Locative Intelligente à Paris</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/">
-    
+    <title>ResteFlex Conciergerie | Gestion Locative Intelligente à Paris</title>
+
+    <!-- Preconnect critiques -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Google Fonts non-bloquant -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"></noscript>
+
     <!-- SEO Meta Tags -->
-    <meta name="description" content="ResteFlex Conciergerie optimise vos revenus locatifs à Paris grâce à l'IA. Gestion Airbnb, conciergerie et maintenance 24/7. Maximisez votre rentabilité !">
-    <meta name="keywords" content="conciergerie paris, gestion airbnb, location saisonnière, gestion locative, investissement immobilier, conciergerie airbnb">
+    <meta name="description" content="ResteFlex Conciergerie optimise vos revenus locatifs à Paris. Gestion Airbnb, conciergerie et maintenance 24/7. Maximisez votre rentabilité !">
+    <meta name="keywords" content="conciergerie paris, gestion airbnb, location saisonnière, gestion locative, investissement immobilier">
     <meta name="author" content="ResteFlex Conciergerie">
     <meta name="robots" content="index, follow">
-    
-    <!-- Open Graph Meta Tags -->
+    <meta name="theme-color" content="#4F46E5">
+
+    <!-- Open Graph -->
     <meta property="og:title" content="ResteFlex Conciergerie | Gestion Locative Intelligente à Paris">
-    <meta property="og:description" content="Maximisez vos revenus locatifs avec notre solution de conciergerie intelligente. Gestion Airbnb, maintenance et support 24/7 à Paris.">
+    <meta property="og:description" content="Maximisez vos revenus locatifs avec notre solution de conciergerie intelligente.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://resteflex.fr">
-    <meta property="og:image" content="https://resteflex.fr/assets/images/og-image.jpg">
-    
-    <!-- Twitter Card Meta Tags -->
+    <meta property="og:url" content="https://resteflex-conciergerie.fr">
+    <meta property="og:image" content="https://resteflex-conciergerie.fr/assets/images/og-image.jpg">
+
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="ResteFlex Conciergerie | Gestion Locative à Paris">
-    <meta name="twitter:description" content="Solution de conciergerie intelligente pour maximiser vos revenus locatifs à Paris. Gestion Airbnb et support 24/7.">
-    <meta name="twitter:image" content="https://resteflex.fr/assets/images/twitter-card.jpg">
-    
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://resteflex.fr">
-    
+    <meta name="twitter:description" content="Solution de conciergerie intelligente pour maximiser vos revenus locatifs à Paris.">
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://resteflex-conciergerie.fr">
+
     <!-- Structured Data -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "LocalBusiness",
       "name": "ResteFlex Conciergerie",
-      "image": "https://resteflex.fr/assets/images/logo.jpg",
-      "description": "Service de conciergerie et gestion locative intelligente à Paris. Maximisez vos revenus avec notre solution tout-en-un.",
+      "description": "Service de conciergerie et gestion locative intelligente à Paris.",
       "address": {
         "@type": "PostalAddress",
         "addressLocality": "Paris",
         "addressRegion": "Île-de-France",
         "addressCountry": "FR"
       },
-      "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": "48.8566",
-        "longitude": "2.3522"
-      },
-      "url": "https://resteflex.fr",
+      "url": "https://resteflex-conciergerie.fr",
       "telephone": "+33650329658",
       "priceRange": "€€",
       "openingHoursSpecification": {
         "@type": "OpeningHoursSpecification",
-        "dayOfWeek": [
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-          "Sunday"
-        ],
+        "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
         "opens": "00:00",
         "closes": "23:59"
       }
     }
     </script>
-    
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Calendly Integration -->
-    <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
 
-    <!-- Preconnect to External Resources -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://assets.calendly.com">
-    <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-NVDSW42J');</script>
-<!-- End Google Tag Manager -->
+    <!-- Google Tag Manager - chargé en différé -->
+    <script>
+      window.addEventListener('load', function() {
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','GTM-NVDSW42J');
+      });
+    </script>
+
+    <!-- Calendly CSS - chargé après le contenu -->
+    <link rel="preload" as="style" href="https://assets.calendly.com/assets/external/widget.css" onload="this.onload=null;this.rel='stylesheet'">
   </head>
   <body>
+    <!-- GTM noscript -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NVDSW42J" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
     <app-root></app-root>
+
     <noscript>
       <h1>ResteFlex Conciergerie - Gestion Locative Intelligente à Paris</h1>
-      <p>Veuillez activer JavaScript pour profiter pleinement de notre service de conciergerie intelligent.</p>
       <p>Pour nous contacter : <a href="tel:+33650329658">+33 6 50 32 96 58</a></p>
     </noscript>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NVDSW42J"
-      height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
+
+    <!-- Calendly JS - chargé en dernier -->
+    <script src="https://assets.calendly.com/assets/external/widget.js" async defer></script>
   </body>
 </html>
