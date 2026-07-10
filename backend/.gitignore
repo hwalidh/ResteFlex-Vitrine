@@ -1,0 +1,47 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+.flattened-pom.xml
+.m2/
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+.settings/
+.classpath
+.project
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Runtime
+src/main/resources/application-local.yml
+.env
+.env.local
+
+# Calendars
+calendars/
+*.ics
+
+# Coverage
+target/site/
+jacoco.exec
+.coverage
+
+# Build
+build/
+dist/
