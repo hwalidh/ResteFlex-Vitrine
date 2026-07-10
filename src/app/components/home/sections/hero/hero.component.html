@@ -64,4 +64,17 @@
       </div>
     </div>
   </div>
+
+  <!-- Scroll indicator -->
+  <div class="scroll-indicator" (click)="scrollDown()">
+    <span class="scroll-indicator__text">Découvrir</span>
+    <div class="scroll-indicator__arrow">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Dégradé bas de section pour indiquer la continuité -->
+  <div class="scroll-fade-hint"></div>
 </section>
