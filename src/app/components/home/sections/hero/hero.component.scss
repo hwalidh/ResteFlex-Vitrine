@@ -2,10 +2,35 @@
   transform: translateZ(-1px) scale(2);
 }
 
+// ── Section hero ──────────────────────────────────────────────────────────────
+// overflow: visible (plus de hidden) pour que le scroll indicator reste visible
+// height: 100dvh pour prendre exactement la hauteur de l'écran visible (mobile-safe)
+.hero-section {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh; // Dynamic viewport height — évite le problème de l'adresse bar mobile
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 6rem; // Espace réservé pour le scroll indicator
+}
+
+// Contenu principal — centré verticalement, ne prend pas tout l'espace
+.hero-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 6rem;  // Compensation du header fixe
+  padding-bottom: 1rem;
+}
+
 // ── Scroll indicator ──────────────────────────────────────────────────────────
 .scroll-indicator {
   position: absolute;
-  bottom: 2rem;
+  bottom: 1.5rem;
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
@@ -22,10 +47,10 @@
   }
 
   &__text {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.7);
-    letter-spacing: 0.15em;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.75);
+    letter-spacing: 0.2em;
     text-transform: uppercase;
   }
 
@@ -44,7 +69,7 @@
     svg {
       width: 1rem;
       height: 1rem;
-      color: rgba(255, 255, 255, 0.8);
+      color: rgba(255, 255, 255, 0.85);
     }
   }
 }
@@ -55,29 +80,45 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 120px;
-  background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.08));
+  height: 100px;
+  background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.06));
   z-index: 5;
   pointer-events: none;
 }
 
 // ── Animations ────────────────────────────────────────────────────────────────
 @keyframes bounce-down {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(6px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(7px); }
 }
 
 @keyframes fade-in-up {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(12px);
+    transform: translateX(-50%) translateY(10px);
   }
   to {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
+  }
+}
+
+// ── Responsive mobile ─────────────────────────────────────────────────────────
+@media (max-width: 640px) {
+  .hero-section {
+    padding-bottom: 5rem;
+  }
+
+  .hero-content {
+    padding-top: 5rem;
+  }
+
+  .scroll-indicator {
+    bottom: 1.2rem;
+
+    &__arrow {
+      width: 2.2rem;
+      height: 2.2rem;
+    }
   }
 }
