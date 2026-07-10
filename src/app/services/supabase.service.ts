@@ -13,6 +13,7 @@ export interface Listing {
   bathrooms: number;
   guests: number;
   image_url: string;
+  images: string[];
   amenities: string[];
   created_at: string;
 }
@@ -40,7 +41,6 @@ export class SupabaseService {
     this.supabase = createClient(environment.supabase.url, environment.supabase.anonKey);
   }
 
-  // Listings CRUD
   getListings(): Observable<Listing[]> {
     return from(
       this.supabase
@@ -67,7 +67,6 @@ export class SupabaseService {
     );
   }
 
-  // Bookings CRUD
   createBooking(booking: Omit<Booking, 'id' | 'created_at'>): Observable<Booking> {
     return from(
       this.supabase

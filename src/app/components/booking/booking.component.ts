@@ -12,7 +12,6 @@ import { takeUntil } from 'rxjs/operators';
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
   template: `
     <div class="min-h-screen bg-gray-50">
-      <!-- Breadcrumb -->
       <div class="bg-white border-b">
         <div class="container mx-auto px-4 py-4">
           <a routerLink="/listings" class="text-blue-600 hover:text-blue-800">← Retour aux logements</a>
@@ -25,14 +24,51 @@ import { takeUntil } from 'rxjs/operators';
         </div>
 
         <div *ngIf="!loading && listing" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <!-- Listing Details (Left) -->
+          <!-- Left: Details -->
           <div class="lg:col-span-2">
-            <!-- Image Gallery -->
+
+            <!-- Photo principale + galerie -->
             <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
-              <img [src]="listing.image_url" alt="{{ listing.title }}" class="w-full h-96 object-cover">
+              <!-- Photo principale -->
+              <div class="relative h-80 overflow-hidden cursor-pointer" (click)="openLightbox(activePhotoIndex)">
+                <img [src]="allPhotos[activePhotoIndex]" [alt]="listing.title"
+                  class="w-full h-full object-cover transition-opacity duration-300">
+                <div class="absolute bottom-3 right-3 bg-black bg-opacity-50 text-white text-sm px-3 py-1 rounded-full">
+                  {{ activePhotoIndex + 1 }} / {{ allPhotos.length }}
+                </div>
+              </div>
+
+              <!-- Miniatures -->
+              <div class="flex gap-2 p-3 overflow-x-auto">
+                <div *ngFor="let photo of allPhotos; let i = index"
+                  class="flex-shrink-0 w-20 h-16 rounded overflow-hidden cursor-pointer border-2 transition-all"
+                  [class.border-blue-600]="activePhotoIndex === i"
+                  [class.border-transparent]="activePhotoIndex !== i"
+                  (click)="activePhotoIndex = i">
+                  <img [src]="photo" [alt]="listing.title + ' photo ' + (i+1)"
+                    class="w-full h-full object-cover hover:opacity-80 transition-opacity">
+                </div>
+              </div>
             </div>
 
-            <!-- Listing Info -->
+            <!-- Lightbox -->
+            <div *ngIf="lightboxOpen"
+              class="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center"
+              (click)="closeLightbox()">
+              <button class="absolute top-4 right-4 text-white text-3xl font-bold z-10" (click)="closeLightbox()">✕</button>
+              <button class="absolute left-4 text-white text-4xl font-bold z-10 p-4"
+                (click)="prevPhoto($event)">‹</button>
+              <button class="absolute right-4 text-white text-4xl font-bold z-10 p-4"
+                (click)="nextPhoto($event)">›</button>
+              <img [src]="allPhotos[lightboxIndex]" [alt]="listing.title"
+                class="max-h-screen max-w-4xl object-contain rounded"
+                (click)="$event.stopPropagation()">
+              <div class="absolute bottom-4 text-white text-sm">
+                {{ lightboxIndex + 1 }} / {{ allPhotos.length }}
+              </div>
+            </div>
+
+            <!-- Infos logement -->
             <div class="bg-white rounded-lg shadow-md p-6 mb-6">
               <h1 class="text-3xl font-bold text-gray-800 mb-2">{{ listing.title }}</h1>
               <p class="text-gray-600 mb-4">📍 {{ listing.location }}</p>
@@ -69,46 +105,44 @@ import { takeUntil } from 'rxjs/operators';
             </div>
           </div>
 
-          <!-- Booking Form (Right) -->
+          <!-- Right: Booking Form -->
           <div>
             <div class="bg-white rounded-lg shadow-md p-6 sticky top-8">
               <h2 class="text-2xl font-bold text-gray-800 mb-6">Réservation</h2>
 
               <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()" class="space-y-4">
-                <!-- Email -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input type="email" formControlName="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent" required>
-                  <span *ngIf="bookingForm.get('email')?.hasError('required')" class="text-red-600 text-sm">Email requis</span>
+                  <input type="email" formControlName="email"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                  <span *ngIf="bookingForm.get('email')?.hasError('required') && bookingForm.get('email')?.touched"
+                    class="text-red-600 text-sm">Email requis</span>
                 </div>
 
-                <!-- Check-in Date -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Date d'arrivée</label>
-                  <input type="date" formControlName="checkIn" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent" required>
-                  <span *ngIf="bookingForm.get('checkIn')?.hasError('required')" class="text-red-600 text-sm">Date requise</span>
+                  <input type="date" formControlName="checkIn"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent">
                 </div>
 
-                <!-- Check-out Date -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Date de départ</label>
-                  <input type="date" formControlName="checkOut" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent" required>
-                  <span *ngIf="bookingForm.get('checkOut')?.hasError('required')" class="text-red-600 text-sm">Date requise</span>
+                  <input type="date" formControlName="checkOut"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent">
                 </div>
 
-                <!-- Number of Guests -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Nombre d'hôtes</label>
-                  <select formControlName="guests" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent" required>
+                  <select formControlName="guests"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent">
                     <option value="">Sélectionnez</option>
-                    <option *ngFor="let i of [1,2,3,4,5,6,7,8]" [value]="i">{{ i }} hôte(s)</option>
+                    <option *ngFor="let i of guestOptions" [value]="i">{{ i }} hôte(s)</option>
                   </select>
                 </div>
 
-                <!-- Price Calculation -->
                 <div class="bg-gray-50 p-4 rounded-lg">
                   <div class="flex justify-between mb-2">
-                    <span class="text-gray-700">{{ nights }} nuit(s) x {{ listing.price }}€</span>
+                    <span class="text-gray-700">{{ nights }} nuit(s) × {{ listing.price }}€</span>
                     <span class="font-semibold">{{ totalPrice }}€</span>
                   </div>
                   <div class="border-t pt-2 flex justify-between">
@@ -117,23 +151,16 @@ import { takeUntil } from 'rxjs/operators';
                   </div>
                 </div>
 
-                <!-- Booking Button -->
-                <button type="submit" [disabled]="bookingForm.invalid || processing" class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg transition-colors">
+                <button type="submit" [disabled]="bookingForm.invalid || processing"
+                  class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg transition-colors">
                   {{ processing ? 'Traitement...' : 'Procéder au paiement Stripe' }}
                 </button>
 
-                <p class="text-xs text-gray-500 text-center">Vous serez redirigé vers Stripe pour payer en toute sécurité</p>
+                <p class="text-xs text-gray-500 text-center">Paiement sécurisé via Stripe</p>
               </form>
 
-              <!-- Error Message -->
-              <div *ngIf="error" class="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                {{ error }}
-              </div>
-
-              <!-- Success Message -->
-              <div *ngIf="success" class="mt-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-                {{ success }}
-              </div>
+              <div *ngIf="error" class="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">{{ error }}</div>
+              <div *ngIf="success" class="mt-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">{{ success }}</div>
             </div>
           </div>
         </div>
@@ -150,6 +177,11 @@ export class BookingComponent implements OnInit, OnDestroy {
   success: string | null = null;
   nights = 0;
   totalPrice = 0;
+  activePhotoIndex = 0;
+  lightboxOpen = false;
+  lightboxIndex = 0;
+  allPhotos: string[] = [];
+  guestOptions = [1,2,3,4,5,6,7,8];
 
   private destroy$ = new Subject<void>();
 
@@ -163,19 +195,10 @@ export class BookingComponent implements OnInit, OnDestroy {
     this.initializeForm();
     this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const id = params.get('id');
-      if (id) {
-        this.loadListing(id);
-      }
+      if (id) this.loadListing(id);
     });
-
-    // Listen to date changes for price calculation
-    this.bookingForm.get('checkIn')?.valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.calculatePrice());
-
-    this.bookingForm.get('checkOut')?.valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.calculatePrice());
+    this.bookingForm.get('checkIn')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.calculatePrice());
+    this.bookingForm.get('checkOut')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.calculatePrice());
   }
 
   private initializeForm() {
@@ -188,25 +211,24 @@ export class BookingComponent implements OnInit, OnDestroy {
   }
 
   private loadListing(id: string) {
-    this.supabaseService.getListingById(id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data) => {
-          this.listing = data;
-          this.loading = false;
-        },
-        error: (error) => {
-          console.error('Error loading listing:', error);
-          this.error = 'Erreur lors du chargement du logement';
-          this.loading = false;
-        }
-      });
+    this.supabaseService.getListingById(id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (data) => {
+        this.listing = data;
+        // Combine image_url + images array (max 15)
+        const extras = data.images && data.images.length ? data.images : [];
+        this.allPhotos = [data.image_url, ...extras].slice(0, 15);
+        this.loading = false;
+      },
+      error: () => {
+        this.error = 'Erreur lors du chargement du logement';
+        this.loading = false;
+      }
+    });
   }
 
   private calculatePrice() {
     const checkIn = this.bookingForm.get('checkIn')?.value;
     const checkOut = this.bookingForm.get('checkOut')?.value;
-
     if (checkIn && checkOut && this.listing) {
       const start = new Date(checkIn);
       const end = new Date(checkOut);
@@ -215,11 +237,29 @@ export class BookingComponent implements OnInit, OnDestroy {
     }
   }
 
-  onSubmit() {
-    if (this.bookingForm.invalid || !this.listing) {
-      return;
-    }
+  openLightbox(index: number) {
+    this.lightboxIndex = index;
+    this.lightboxOpen = true;
+  }
 
+  closeLightbox() {
+    this.lightboxOpen = false;
+  }
+
+  prevPhoto(event: Event) {
+    event.stopPropagation();
+    this.lightboxIndex = (this.lightboxIndex - 1 + this.allPhotos.length) % this.allPhotos.length;
+    this.activePhotoIndex = this.lightboxIndex;
+  }
+
+  nextPhoto(event: Event) {
+    event.stopPropagation();
+    this.lightboxIndex = (this.lightboxIndex + 1) % this.allPhotos.length;
+    this.activePhotoIndex = this.lightboxIndex;
+  }
+
+  onSubmit() {
+    if (this.bookingForm.invalid || !this.listing) return;
     this.processing = true;
     this.error = null;
 
@@ -233,21 +273,16 @@ export class BookingComponent implements OnInit, OnDestroy {
       status: 'pending'
     };
 
-    this.supabaseService.createBooking(booking)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (savedBooking) => {
-          // TODO: Integrate Stripe checkout
-          this.success = 'Réservation créée! Redirection vers Stripe...';
-          this.processing = false;
-          // In production: initiate Stripe payment
-        },
-        error: (error) => {
-          console.error('Error creating booking:', error);
-          this.error = 'Erreur lors de la création de la réservation';
-          this.processing = false;
-        }
-      });
+    this.supabaseService.createBooking(booking).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.success = 'Réservation créée! Redirection vers Stripe...';
+        this.processing = false;
+      },
+      error: () => {
+        this.error = 'Erreur lors de la création de la réservation';
+        this.processing = false;
+      }
+    });
   }
 
   ngOnDestroy() {
